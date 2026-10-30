@@ -12,6 +12,19 @@
 
 */
 
+function funcDeleteLog(string $strLogFile)
+{
+  try
+  {  
+     //delete log file  
+     unlink($strLogFile);
+  }
+ catch (PDOException $e) {
+    exit;
+  }
+};
+
+
 function funcWriteLog(string $strLogFile, $exception, string $strErrorMessage)
 {
 

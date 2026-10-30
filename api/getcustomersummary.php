@@ -542,8 +542,8 @@ $data = json_decode(
     true
 );
 
-//configure log file
-unlink('/var/www/WebApp/public/phperrors.log');
+//delete existing log file
+funcDeleteLog(CNST_STR_ERRORLOG);
 
 #validate JSON
 if (!is_array($data)) {

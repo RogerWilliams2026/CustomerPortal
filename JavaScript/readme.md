@@ -33,10 +33,11 @@ JavaScript - client side JavaScript
 
 **Note:** PHP purposely put into the 'Public' folder for testing purposes
 
+
 **Developer Features**
 
 Records PHP errors in a custom PHP log, at the moment written in the Public folder
-for testing
+for testing done using a custom PHP library
 
 
 ### To Do
