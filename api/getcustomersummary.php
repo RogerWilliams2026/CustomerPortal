@@ -1,5 +1,18 @@
 <?php
 /*
+Modified 30/10/2026 By Roger Williams
+
+Implemented new log writing system using new PHP files:
+- logwriter
+- globals
+
+uses globals.php to get log name and logwritefunction:
+funcWriteLog
+to write to chosen log
+
+no longer need $strErrors!
+
+
 Modified 29/10/2026 By Roger Williams
 
 changed functions to return true if error and populate $strErrors if error
@@ -45,6 +58,8 @@ declare(strict_types=1);
 
 #connect to database
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/globals.php';
+require_once __DIR__ . '/logwriter.php';
 
 #VARS
 $strSummaryHTML = '<h3>Customer Summary</h3>';
@@ -54,7 +69,7 @@ $fltCUS_CreditLimitAmt = 0.00;
 $intOffset = -5;
 //for error handling
 $intErrorCount = 0;
-$strErrors = '';
+
 
 function funcFormatCurrency(float $fltAmount, string $strCurrencySymbol)
 {
@@ -66,6 +81,7 @@ function funcFormatCurrency(float $fltAmount, string $strCurrencySymbol)
     as currency
 
 */
+
     $fltFormattedAmount = 0.00;
     $parts = '';
 
@@ -99,13 +115,10 @@ function funcSalesLastYTD(PDO $pdo, $strCustomerID)
 */
     global $intOffset; 
     global $strSummaryHTML;
-    global $strErrors;
- error_log('Last YTD global vars: ' . $intOffset . ' ' . $strSummaryHTML . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');   
-
+ 
     $intStartOffset = (int)$intOffset - 2;
     $intEndOffset   = (int)$intOffset - 1;
 
-    error_log('Last YTD offsets: ' . $intStartOffset . ' ' . $intEndOffset . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');   
     //using "" as will insert variable into string
     $SQL = "
             SELECT Sum(SOD.SOD_UnitPrice * SOD.SOD_RequiredQty) AS SalesLastYTD FROM SOM
@@ -114,9 +127,7 @@ function funcSalesLastYTD(PDO $pdo, $strCustomerID)
             AND SOM.SOM_SalesOrderDate BETWEEN DATE_ADD(CURDATE(), INTERVAL :startoffset YEAR) AND DATE_ADD(CURDATE(), INTERVAL :endoffset YEAR);
            "; 
 
-   error_log('Last YTD '. PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-
-    try {
+      try {
         $stmt = $pdo->prepare($SQL);
         $stmt->execute([
             ':customerid' => $strCustomerID,
@@ -126,7 +137,7 @@ function funcSalesLastYTD(PDO $pdo, $strCustomerID)
 
         #get results
         $result = $stmt->fetch();
-      error_log('Last YTD '. $result . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
+
         #any records?
         if (!empty($result)) {
             $strSummaryHTML = $strSummaryHTML . '<p>Sales Last YTD: ' . funcFormatCurrency($result['SalesLastYTD'], '£') . '</p>';  
@@ -135,14 +146,7 @@ function funcSalesLastYTD(PDO $pdo, $strCustomerID)
             return false;
         }
     } catch (PDOException $e) {
-
-        error_log(
-            'Last YTD SQL error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'Last YTD Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Sales Last YTD Error');
         return true;
     }
   return false;
@@ -159,18 +163,14 @@ function funcSalesMTD(PDO $pdo, $strCustomerID)
 */
     global $intOffset;
     global $strSummaryHTML;
-    global $strErrors;
 
     $HTML = "";
     $dateStart = date('Y/m/d');
     $dateStart = date_add(date_create($dateStart), date_interval_create_from_date_string('-1 month'));
-error_log('datestart1: ' . print_r($dateStart, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
+
     //add year offset
     $dateStart = date_add($dateStart, date_interval_create_from_date_string("{$intOffset} year"));   
     $dateStart = $dateStart->format('Y/m/d');
-error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-
-   error_log('MTD '. PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
     try {
         $stmt = $pdo->prepare("
@@ -180,14 +180,6 @@ error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,
                 AND SOM.SOM_SalesOrderDate BETWEEN :startdate  AND CURDATE();
                 ");
 
-   error_log('MTD customer ID: '. $strCustomerID . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-   error_log('MTD customer ID: '. "
-                SELECT Sum(SOD.SOD_UnitPrice * SOD.SOD_RequiredQty) AS SalesMTD FROM SOM
-                INNER JOIN SOD ON (SOM.SOM_SalesOrderID = SOD.SOD_SalesOrderID)
-                WHERE SOM.SOM_CustomerID = :customerid AND SOD.SOD_ShipComplete <> 0
-                AND SOM.SOM_SalesOrderDate BETWEEN :startdate  AND CURDATE();
-                " . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-
                 $stmt->execute([
                     ':customerid' => $strCustomerID,
                     ':startdate' => $dateStart
@@ -196,7 +188,6 @@ error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,
         #get results
         $result = $stmt->fetch();
     
-        error_log('MTD result: '. $result['SalesMTD'] . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');        
         #any records?
         if (!empty($result)) {
             if (is_null($result['SalesMTD']))
@@ -207,14 +198,12 @@ error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,
             {
                 $strSummaryHTML = $strSummaryHTML . '<p>Sales MTD: ' . funcFormatCurrency($result['SalesMTD'], '£') . '</p>';
             }
-          error_log('MTD HTML: '. $strSummaryHTML  . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');  
             }
         else {
             return false;
         }
     } catch (PDOException $e) {
-        error_log('MTD Error: '. $e->getMessage() . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-        $strErrors = $strErrors . 'MTD Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Sales MTD Error');
         return true;
     }
   return false;
@@ -231,11 +220,8 @@ function funcSalesYTD(PDO $pdo, $strCustomerID)
 */
     global $intOffset; 
     global $strSummaryHTML;
-    global $strErrors;
 
     $intNum = $intOffset -1;
-
-   error_log('YTD '. PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
     try {
         $stmt = $pdo->prepare("
@@ -244,25 +230,7 @@ function funcSalesYTD(PDO $pdo, $strCustomerID)
         WHERE SOM.SOM_CustomerID = :customerid AND SOD.SOD_ShipComplete <> 0
         AND SOM.SOM_SalesOrderDate BETWEEN DATE_ADD(CURDATE(),INTERVAL :lastyear YEAR) AND CURDATE();
         "
-        );
-
-        error_log(
-            'Last YTD offset: ' . print_r(
-                "
-        SELECT Sum(SOD.SOD_UnitPrice * SOD.SOD_RequiredQty) AS SalesYTD FROM SOM
-        INNER JOIN SOD ON (SOM.SOM_SalesOrderID = SOD.SOD_SalesOrderID)
-        WHERE SOM.SOM_CustomerID = {$strCustomerID} AND SOD.SOD_ShipComplete <> 0
-        AND SOM.SOM_SalesOrderDate BETWEEN DATE_ADD(CURDATE(),INTERVAL {$intNum} YEAR) AND CURDATE();
-        ", true) . PHP_EOL,
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );  
-
-        error_log(
-            'Last YTD offset: ' . print_r($intNum, true) . PHP_EOL,
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );    
+        ); 
 
         $stmt->execute([
             ':customerid' => $strCustomerID,
@@ -281,13 +249,7 @@ function funcSalesYTD(PDO $pdo, $strCustomerID)
         }
       } catch (PDOException $e) {
 
-        error_log(
-            'Last YTD Error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'YTD Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Sales YTD Error');
         return true;
     }
   return false;
@@ -305,9 +267,6 @@ function funcOutstandingInvoiceValue(PDO $pdo, $strCustomerID)
 
 */
     global $strSummaryHTML;
-    global $strErrors;
-
-   error_log('invoice'. PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
     try {
         $stmt = $pdo->prepare("
@@ -327,14 +286,7 @@ function funcOutstandingInvoiceValue(PDO $pdo, $strCustomerID)
           return false;                          
         }
       } catch (PDOException $e) {
-
-        error_log(
-            'Last YTD SQL error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'Outstanding Invoices Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Last YTD Error');
         return true;
     }
   return false;
@@ -351,9 +303,7 @@ function funcOutstandingCreditMemoValue(PDO $pdo, $strCustomerID)
 
 */
     global $strSummaryHTML;
-    global $strErrors;
 
-   error_log('Y '. PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
     try {
         $stmt = $pdo->prepare("
@@ -376,14 +326,7 @@ function funcOutstandingCreditMemoValue(PDO $pdo, $strCustomerID)
                 ]);
         }
       } catch (PDOException $e) {
-
-        error_log(
-            'Last YTD SQL error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'Last YTD Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Outstanding Credit Memos Error');
         return true;
     }
   return false;
@@ -400,11 +343,8 @@ function funcGetBacklog(PDO $pdo, $strCustomerID)
 
 */
     global $strSummaryHTML;
-    global $strErrors;
-
 
     try {
-error_log('backlog: ' . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
        $stmt = $pdo->prepare('
                 SELECT Sum(SOD.SOD_UnitPrice * SOD.SOD_RequiredQty) AS Backlog FROM SOM
@@ -424,14 +364,7 @@ error_log('backlog: ' . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
            return false; 
         }
       } catch (PDOException $e) {
-
-        error_log(
-            'Last YTD SQL error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'Backlog Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Backlog Error');
         return true;
     }
   return false;
@@ -452,18 +385,15 @@ function funcGetOutstandingAR(PDO $pdo, $strCustomerID)
 */
     global $intOffset; 
     global $strSummaryHTML;
-    global $strErrors;
 
     $sql = "";
 
     #start date is today - 1 month
     $dateStart = date('Y/m/d');
     $dateStart = date_add(date_create($dateStart), date_interval_create_from_date_string('-1 month'));
-error_log('datestart1: ' . print_r($dateStart, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
+
     //add year offset
     $dateStart = date_add($dateStart, date_interval_create_from_date_string("{$intOffset} year"));
-error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-    
     $dateStart = $dateStart->format('Y/m/d');
  
     #end date is today
@@ -582,27 +512,15 @@ error_log('datestart2 - offset years: ' . print_r($dateStart, true) . PHP_EOL,3,
 
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    error_log('AR result: ' . print_r($result, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-
-   error_log('AR SQL Result: '. print_r($result, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-    
         #any records?
         if (!empty($result)) {
-   error_log('AR: '. print_r($result["SumOfAR"], true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
-             $strSummaryHTML = $strSummaryHTML .  '<p>Outstanding AR: ' . funcFormatCurrency($result['SumOfAR'], '£') . '</p>';        
+              $strSummaryHTML = $strSummaryHTML .  '<p>Outstanding AR: ' . funcFormatCurrency($result['SumOfAR'], '£') . '</p>';        
             }
         else {
             return false;
         }
       } catch (PDOException $e) {
-
-        error_log(
-            'Last YTD SQL error: ' . $e->getMessage(),
-            3,
-            '/var/www/WebApp/public/phperrors.log'
-        );
-
-        $strErrors = $strErrors . 'AR Error: ' . $e->getMessage();
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'Outstanding ARError');
         return true;
     }
   return false;
@@ -626,8 +544,6 @@ $data = json_decode(
 
 //configure log file
 unlink('/var/www/WebApp/public/phperrors.log');
-//print JSON passed to PHP
-error_log("data:\n ". print_r($data, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
 #validate JSON
 if (!is_array($data)) {
@@ -643,7 +559,6 @@ if (!is_array($data)) {
 
 #validate data
 $strCustomerID = trim($data['customerID'] ?? '');
-error_log('customerID: '. print_r($strCustomerID, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');
 
 if ($strCustomerID === '') {
     http_response_code(400);
@@ -673,7 +588,6 @@ try {
     #any records?
     if (!empty($result)) {
         $intErrorCount = 0;
-        $strErrors = '';
 
         #customer summary start
         $strSummaryHTML = $strSummaryHTML . '<p>Credit Limit: ' . funcFormatCurrency($result['CUS_CreditLimitAmt'], '£') . '</p>';  
@@ -689,10 +603,11 @@ try {
         //any errors
         if ($intErrorCount !== 0)
             {
-            error_log('Errors: '. $blnError . ' ' . print_r($strErrors, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');      
+            // error_log('Errors: '. $blnError . ' ' . print_r($strErrors, true) . PHP_EOL,3,'/var/www/WebApp/public/phperrors.log');      
+            // funcWriteLog(CNST_STR_ERRORLOG, null, 'Last YTD Error');
             echo json_encode([
                     'status' => false,
-                    'error' => $strErrors
+                    'error' => 'Errors Stopped Processing Check PHp Log File On Server'
                 ]);
             }
         else
@@ -704,13 +619,14 @@ try {
             }
         }
     else {
+        funcWriteLog(CNST_STR_ERRORLOG, $e, 'No Customer Record Found');     
         echo json_encode([
                 'status' => false,
-                'error' => $strErrors
+                'error' => 'No Customer Record Found'
             ]);
     }
 } catch (PDOException $e) {
-
+    funcWriteLog(CNST_STR_ERRORLOG, $e, 'Error Trying To Read Customer Summary Data');
     http_response_code(500);
 
     echo json_encode([

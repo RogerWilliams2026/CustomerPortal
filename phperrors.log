@@ -5,9 +5,13 @@ data:
 )
 
 customerID: S488
+test
 backlog: 
+test
 Y 
+test
 invoice
+test
 YTD 
 Last YTD offset: 
         SELECT Sum(SOD.SOD_UnitPrice * SOD.SOD_RequiredQty) AS SalesYTD FROM SOM
@@ -16,14 +20,15 @@ Last YTD offset:
         AND SOM.SOM_SalesOrderDate BETWEEN DATE_ADD(CURDATE(),INTERVAL -6 YEAR) AND CURDATE();
         
 Last YTD offset: -6
+test
 datestart1: DateTime Object
 (
-    [date] => 2026-09-29 00:00:00.000000
+    [date] => 2026-09-30 00:00:00.000000
     [timezone_type] => 3
     [timezone] => UTC
 )
 
-datestart2 - offset years: 2021/09/29
+datestart2 - offset years: 2021/09/30
 MTD 
 MTD customer ID: S488
 MTD customer ID: 
@@ -33,21 +38,19 @@ MTD customer ID:
                 AND SOM.SOM_SalesOrderDate BETWEEN :startdate  AND CURDATE();
                 
 MTD result: 
-MTD HTML: <h3>Customer Summary</h3><p>Credit Limit: £60,000.00</p><p>Sales Order Backlog Value: £1,052,882.94</p><p>Outstanding Credit Memo Value: £115.04</p><p>Outstanding Invoices: £26,028.22</p><p>Sales YTD: £61,429.52</p><p>Sales MTD: £0.00</p>
-Last YTD global vars: -5 <h3>Customer Summary</h3><p>Credit Limit: £60,000.00</p><p>Sales Order Backlog Value: £1,052,882.94</p><p>Outstanding Credit Memo Value: £115.04</p><p>Outstanding Invoices: £26,028.22</p><p>Sales YTD: £61,429.52</p><p>Sales MTD: £0.00</p>
-Last YTD offsets: -7 -6
-Last YTD 
-Last YTD Array
+test
+MTD HTML: <h3>Customer Summary</h3><p>Credit Limit: £60,000.00</p><p>Sales Order Backlog Value: £1,052,882.94</p><p>Outstanding Credit Memo Value: £115.04</p><p>Outstanding Invoices: £26,028.22</p><p>Sales YTD: £58,499.00</p><p>Sales MTD: £0.00</p>
+test
 datestart1: DateTime Object
 (
-    [date] => 2026-09-29 00:00:00.000000
+    [date] => 2026-09-30 00:00:00.000000
     [timezone_type] => 3
     [timezone] => UTC
 )
 
 datestart2 - offset years: DateTime Object
 (
-    [date] => 2021-09-29 00:00:00.000000
+    [date] => 2021-09-30 00:00:00.000000
     [timezone_type] => 3
     [timezone] => UTC
 )
@@ -63,3 +66,4 @@ AR SQL Result: Array
 )
 
 AR: 30642.011595249
+test
