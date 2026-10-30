@@ -1,0 +1,34 @@
+<!-- header for forms -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" link rel="stylesheet" href="/css/style.css"></link>
+</head>
+<header>
+       <div id="divHeader">RogCustomer Portal 2026</div>
+       <div id="divCustomerDetails">
+            <div id="divCustomerID" class="clsCustomerDetails"></div>      
+            <div id="divCustomerName" class="clsCustomerDetails"></div>
+       </div>   
+
+       <div id="divLogout">
+          <button id="btnLogout">Logout</button>
+       </div>
+
+
+<script type="module">
+    import * as modPageHistory from "../JavaScript/pagehistory.js";
+    import * as modGeneral from "../JavaScript/general.js";
+
+    // //show customer ID, name 
+    document.getElementById("divCustomerID").innerText = "Customer ID: " + sessionStorage.getItem("customerid");
+    document.getElementById("divCustomerName").innerText =  sessionStorage.getItem("customername")
+    //store header in global var so general.js can access it
+    modPageHistory.SetHeader(document);
+    modGeneral.SetLogoutButtonHandler();
+</script>
+
+</header>

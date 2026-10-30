@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2022-03-22
+    See: https://launchpad.net/bugs/1966004
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>RogCustomer Portal 2026 - Menu Options</title>
+  </head>
+  <link type="text/css" link rel="stylesheet" href="/css/style.css"></link>
+
+  <body>
+  <iframe src="/html/header.html" class="clsHeader"></iframe> 
+
+ <div id="divFlex"> 
+  <div id="divSummaryHeader">
+      <div id="divSummary"></div> 
+  </div>
+
+  <div id="divMain">
+      <hr>
+      <div id="divMainHeader"> 
+          Main Menu Options
+      </div>
+      <hr>
+
+      <fieldset id="fldOptions">
+        <legend>Menu Options</legend>
+          <div class="clsOptions"><a onClick="funcOpenMenuItem(1)">1 - AR Outstanding</a></div>
+          <div class="clsOptions"><a href="customer_ar.html">2 - Credit Memos</a></div>
+          <div class="clsOptions"><a href="customer_ar.html">3 - Invoice Reprint</a></div>
+          <div class="clsOptions"><a href="customer_ar.html">4 - Sales Orders - Backlog</a></div>
+          <div class="clsOptions"><a href="customer_ar.html">5 - Sales Orders - Current</a></div>
+          <div class="clsOptions"><a href="customer_ar.html">6 - Sales Statistics</a></div>
+      </fieldset>
+  </div>
+ </div>
+
+ <iframe src="/html/footer.html" class="clsFooter"></iframe> 
+ <script src="../JavaScript/general.js" type="module" defer></script>
+ <script type="module">
+   import {funcGetSummary} from "../JavaScript/getsummary.js"
+   
+   //get customer summary data
+   await funcGetSummary();
+ </script>
+</body>
+
+</html>

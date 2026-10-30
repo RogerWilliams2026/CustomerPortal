@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2022-03-22
+    See: https://launchpad.net/bugs/1966004
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>RogCustomer Portal 2026 - Login</title>
+  </head>
+  <link type="text/css" link rel="stylesheet" href="/css/style.css"></link>
+
+  <body>
+  <iframe src="/html/header_login.html" class="clsHeaderLogin"></iframe> 
+
+  <div id="divMainLogin" class="clsMainLogin">
+      <hr>
+      <div id="divMainHeader"> 
+          Login To System
+      </div>
+      <hr>
+
+   <div id="divLogin"> Enter Login Details:  <br><br>    
+    <form id="frmLogin">
+        <label for="TXTUser" class="clsLabelText">User ID:</label>
+        <input
+            type="text"
+            id="TXTUser"
+            placeholder="User ID"
+            required
+            class="clsLabelText"
+            maxlength="10"
+            autofocus
+        >
+        <br><br>  
+        <label for="TXTPassword" class="clsLabelText">Password:</label>
+        <input
+            id="TXTPassword"
+            placeholder="Password"
+            required
+            class="clsLabelText"
+            maxlength="10"
+            type="password"
+        >
+        <br><br>  
+        <button type="submit" id="BTNLogin">
+            Login
+        </button>        
+      </form>
+   </div>
+  </div> 
+
+  <iframe src="/html/footer.html" class="clsFooter"></iframe> 
+ </body>
+<script src="./JavaScript/login.js" type="module" defer></script>
+</html>

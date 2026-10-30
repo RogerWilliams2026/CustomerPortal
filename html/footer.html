@@ -1,0 +1,51 @@
+<!-- footer for forms -->
+<link type="text/css" link rel="stylesheet" href="/css/style.css"></link>
+
+<footer>
+<div id="divFooter" class="clsFooterGrid">      
+      <div id="divCopyright">(c) 2026 By Roger Williams</div>    
+
+      <div id="divDate"></div>     
+      <div id="divTime"></div>         
+</div>
+</footer>
+
+<script type = "module">
+//Created 26/09/2026 By Roger Williams
+//
+//create realtime clock
+//
+
+import * as modPageHistory from "../JavaScript/pagehistory.js";
+
+let divDate = document.getElementById("divDate");
+let divTime = document.getElementById("divTime");
+let intMs = 1000;
+
+function funcGetDateTime() 
+{
+    let dteDate = new Date();
+    let strDate = "";
+    let strTime = "";
+    let intMonth = dteDate.getMonth() + 1;
+
+    strDate =   dteDate.getDate() < 10  ? "0" + dteDate.getDate() : dteDate.getDate();  
+    strDate += "/";
+    strDate += intMonth < 10 ? "0" + intMonth : intMonth;
+    strDate += "/" + dteDate.getFullYear();
+    strTime = dteDate.getHours() < 10  ? "0" + dteDate.getHours() : dteDate.getHours();  
+    strTime += ":";
+    strTime += dteDate.getMinutes() < 10  ? "0" + dteDate.getMinutes() : dteDate.getMinutes();  
+    strTime += ":";
+    strTime += dteDate.getSeconds() < 10  ? "0" + dteDate.getSeconds() : dteDate.getSeconds();  
+    divDate.innerText = strDate;   
+    divTime.innerText = strTime;     
+}
+
+//add current page to open pages dictionary
+modPageHistory.dictPages[document.title] = document.URL;
+
+window.setInterval( funcGetDateTime, 1000);
+</script>
+
+</footer>
