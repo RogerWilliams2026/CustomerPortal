@@ -68,4 +68,4 @@ async function funcShowReportAR(event)
 
 
 //create handler for show reports submit button
-document.getElementById("frmReportOptionsAR").addEventListener("submit", funcShowReportAR);
+document.getElementById("BTNShowReportAR").addEventListener("submit", funcShowReportAR);

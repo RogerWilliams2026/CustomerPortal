@@ -288,6 +288,21 @@ a:hover {
     margin-top: 14px;
 }
 
+#divReportFlex {
+    display: flex;
+    justify-content:space-evenly; 
+    text-wrap-mode: nowrap;
+    height: 5vh;
+    margin-top: 14px;
+}
+
+#divReportDetailHeader {
+   color:white;
+   font-weight: 600;;   
+}
+
+
+
 /* #divAR {
     left: 100px;
 

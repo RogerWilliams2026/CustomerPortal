@@ -31,11 +31,13 @@ const CNST_STR_HTML_HEADER = '
   <div id="divReportHeader">
      <h3>Report Results:</h3>
   </div>
-   <div id="divReportDetail">
+   <div id="divReportDetail"> 
+      <div id="divReportFlex">
 ';
 
 const CNST_STR_HTML_FOOTER = '
-   </div>
+      </div>   
+</div>
  </body>
 <script src="./JavaScript/general.js" type="module" defer></script>
 </html>
@@ -198,10 +200,25 @@ function funcGetOutstandingAR()
 
         #any records?
         if (!empty($result)) {
+            //create detail header
+            $strHTML = '<div id="divReportDetailHeader">' .
+                       '<div>' . 'Invoice ID' . '</div>' . 
+                       '<div>' . 'Invoice Date' . '</div>' .
+                       '<div>' . 'Bucket One' . '</div>' .
+                       '<div>' . 'Bucket Two' . '</div>' .
+                       '<div>' . 'Bucket Three' . '</div>' .
+                       '<div>' . 'BucketF Four' . '</div>' .
+                       '</div>';
+
             //loop through records and create HTML page
             while ($row = $stmt->fetch())
             {
-              $strHTML = $strHTML .  '<p>' . $$row['ARM_InvoiceID'] . funcFormatCurrency($result['SumOfAR'], '£') . '</p>';        
+              $strHTML = $strHTML . '<div>' . $$row['ARM_InvoiceID'] . '</div>'  .
+              '<div>' . $$row['ARM_InvoiceDate'] . '</div>' .
+              '<div>' . funcFormatCurrency($result['QueryAR.BucketOne)'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($result['QueryAR.BucketTwo)'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($result['QueryAR.BucketThree)'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($result['QueryAR.BucketFour)'], '£') . '</div>';        
             }
            }
         else {
