@@ -21,6 +21,41 @@
       </div>
       <hr>
 
+  <div id="divReportOptions">Report Options:<br><br>    
+    <form id="frmReportOptions">
+        <label for="TXTDateFrom" class="clsLabelText">Date From:</label>
+        <input
+            type="text"
+            id="TXTDateFrom"
+            placeholder="Date From"
+            required
+            type="date"
+            class="clsLabelText"
+            maxlength="12"
+            autofocus
+        >
+        <br><br>  
+        <label for="TXTDateTo" class="clsLabelText">Date To:</label>
+        <input
+            type="text"
+            id="TXTDateTo"
+            placeholder="Date To"
+            required
+            type="date"
+            class="clsLabelText"
+            maxlength="12"
+            autofocus
+        >
+        <br><br>  
+        <button type="submit" id="BTNShowReport">
+            Show Report
+        </button>        
+      </form>
+   </div>
+
+   <div id="divReport">
+      <iframe id="fraReport"></iframe>
+   </div>
 
   </div>
 
