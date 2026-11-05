@@ -280,6 +280,13 @@ a:hover {
     padding-bottom: 2px;
 }
 
+#divReportOptions {
+    display: flex;
+    justify-content:space-evenly; 
+    text-wrap-mode: nowrap;
+    height: 5vh;
+    margin-top: 14px;
+}
 
 /* #divAR {
     left: 100px;

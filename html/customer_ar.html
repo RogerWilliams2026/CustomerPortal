@@ -21,11 +21,10 @@
       </div>
       <hr>
 
-  <div id="divReportOptions">Report Options:<br><br>    
-    <form id="frmReportOptions">
+  <div id="divReportOptions"><br><br>    
+    <!-- <form id="frmReportOptions"> -->
         <label for="TXTDateFrom" class="clsLabelText">Date From:</label>
         <input
-            type="text"
             id="TXTDateFrom"
             placeholder="Date From"
             required
@@ -37,7 +36,6 @@
         <br><br>  
         <label for="TXTDateTo" class="clsLabelText">Date To:</label>
         <input
-            type="text"
             id="TXTDateTo"
             placeholder="Date To"
             required
@@ -46,12 +44,14 @@
             maxlength="12"
             autofocus
         >
-        <br><br>  
-        <button type="submit" id="BTNShowReport">
+        <br><br>
+   </div>
+        <form id="frmReportOptionsAR"></form>   
+        <button type="submit" id="BTNShowReportAR">
             Show Report
         </button>        
       </form>
-   </div>
+
 
    <div id="divReport">
       <iframe id="fraReport"></iframe>
@@ -63,4 +63,5 @@
  <iframe src="/html/footer.html" class="clsFooter"></iframe> 
  </body>
 <script src="../JavaScript/general.js" type="module" defer></script>
+<script src="./JavaScript/report.js" type="module" defer></script>
 </html>
