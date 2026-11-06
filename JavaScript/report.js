@@ -13,28 +13,21 @@ const BTNShowReportAR = document.getElementById("BTNShowReportAR");
 const BTNShowReportCreditMemos= document.getElementById("BTNShowReportCreditMemos");
 const BTNShowReportInvoices = document.getElementById("BTNShowReportInvoices");
 //get report frame to show results in
-let DIVReport = document.getElementById("divReportFlex");
+let DIVReport = document.getElementById("fraReport");
 
 async function funcShowReportAR(event)
 {
    let dteDateFrom = new Date(document.getElementById("TXTDateFrom").value);
    let dteDateTo = new Date(document.getElementById("TXTDateTo").value);
-   alert("funcShowReportAR");
    //convert to japanese format
    dteDateFrom = dteDateFrom.toISOString();
-   alert(dteDateFrom);
    dteDateTo = dteDateTo.toISOString();
-   alert(dteDateTo);
-
 
    //remove: T00:00:00.000Z
    dteDateFrom = dteDateFrom.replace("T00:00:00.000Z","");
    dteDateTo = dteDateTo.replace("T00:00:00.000Z","");
 
-   alert(dteDateFrom);
-   alert(dteDateTo);
-
-    event.preventDefault();
+   event.preventDefault();
    
         const dataUser = {
             customerid: sessionStorage.getItem("customerid"),
@@ -43,7 +36,6 @@ async function funcShowReportAR(event)
             dateto: dteDateTo
         };
 
-       alert(dataUser); 
        //send to PHP
         const response = await fetch("/api/getreportdata.php", {
 
@@ -62,10 +54,10 @@ async function funcShowReportAR(event)
             //get HTML from promise and put into DIV
 
             if (result.status) {
-alert("records: " + result.norecords);                
                 if (result.norecords == false)
                 {
-                   DIVReport.innerHTML = result.HTML;
+                   //update iframe with HTML   
+                   DIVReport.src="javascript:'" + result.HTML + "'";
                 }
                 else
                 {
@@ -83,7 +75,6 @@ alert("records: " + result.norecords);
         };
 };
 
-alert("report.js");
 
 //create handler for show reports submit button
 document.getElementById("BTNShowReportAR").addEventListener("click", funcShowReportAR);

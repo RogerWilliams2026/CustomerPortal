@@ -32,12 +32,24 @@ const CNST_STR_HTML_HEADER = '
      <h3>Report Results:</h3>
   </div>
    <div id="divReportDetail"> 
-      <div id="divReportFlex">
+      <div id="divReportFlex"></div>   
+   </div>      
 ';
 
+// const CNST_STR_HTML_FOOTER = '
+// <footer>
+//    Date Printed: ' . date("d/m/Y") .
+// '<hr id="lineReport">
+// </footer>
+//  </body>
+// <script src="./JavaScript/general.js" type="module" defer></script>
+// </html>
+// ';
+
 const CNST_STR_HTML_FOOTER = '
-      </div>   
-</div>
+<footer>
+<hr id="lineReport">
+</footer>
  </body>
 <script src="./JavaScript/general.js" type="module" defer></script>
 </html>
@@ -98,23 +110,38 @@ function funcGetOutstandingAR()
 
    
     try {
-//    SELECT SUM(QueryAR.OutstandingAR) AS SumOfAR 
+    // $sql = "
+    // SELECT DISTINCT 
+    //         IVM_InvoiceID,
+    //         ARM_SalesOrderID,
+    //         ARM_CurrencyType,
+    //         ARM_Region,
+    //         ARM_CustomerID,
+    //         ARM_DomesticBalanceDueAmt,
+    //         ARM_DomesticInvoiceNetAmt,
+    //         CONCAT(CUS_BillName, ARM_CustomerID) AS CusNameID,
+    //         CUS_BillName,
+    //         CUS_BillState,
+    //         CUS_BillPhone,
+    //         CUS_BillContactName,
+    //         ARM_CustomerPOID,
+    //         ARM_InvoiceID,
+    //         ARM_InvoiceDate,
+    //         ARM_DueDate,
+    //         ARM_ARTermsDesc,
+    //         ARM_InvoiceAmt,
+    //         SumOfARP_PayAmt,
+    //         QueryAR.BucketOne,
+    //         QueryAR.BucketTwo,
+    //         QueryAR.BucketThree,
+    //         QueryAR.BucketFour
     $sql = "
     SELECT DISTINCT 
-            IVM_InvoiceID,
+            ARM_InvoiceID,
             ARM_SalesOrderID,
             ARM_CurrencyType,
             ARM_Region,
-            ARM_CustomerID,
-            ARM_DomesticBalanceDueAmt,
-            ARM_DomesticInvoiceNetAmt,
-            CONCAT(CUS_BillName, ARM_CustomerID) AS CusNameID,
-            CUS_BillName,
-            CUS_BillState,
-            CUS_BillPhone,
-            CUS_BillContactName,
             ARM_CustomerPOID,
-            ARM_InvoiceID,
             ARM_InvoiceDate,
             ARM_DueDate,
             ARM_ARTermsDesc,
@@ -236,27 +263,80 @@ function funcGetOutstandingAR()
         #any records?
         if (!empty($result)) {
             //create detail header
-            $strHTML = 
-                       '<div>' . 'Invoice ID' . '</div>' . 
-                       '<div>' . 'Invoice Date' . '</div>' .
-                       '<div>' . 'Bucket One' . '</div>' .
-                       '<div>' . 'Bucket Two' . '</div>' .
-                       '<div>' . 'Bucket Three' . '</div>' .
-                       '<div>' . 'Bucket Four' . '</div>';
-funcWriteLog(CNST_STR_ERRORLOG, null, 'Header: ' . $strHTML);                       
+            // $strHTML = 
+            //            '<div>' . 'Invoice Date' . '</div>' . 
+            //            '<div>' . 'Due Date' . '</div>' .
+            //            '<div>' . 'AR Terms' . '</div>' .
+            //            '<div>' . 'Invoice ID' . '</div>' .
+            //            '<div>' . 'Sales Order ID' . '</div>' .                       
+            //            '<div>' . 'Customer PO ID' . '</div>' .
+            //            '<div>' . 'Region' . '</div>' .
+            //            '<div>' . 'Invoice Amount' . '</div>' .      
+            //            '<div>' . 'Amount Due' . '</div>' .               
+            //            '<div>' . 'Bucket One' . '</div>' .
+            //            '<div>' . 'Bucket Two' . '</div>' .
+            //            '<div>' . 'Bucket Three' . '</div>' .
+            //            '<div>' . 'Bucket Four' . '</div>';
+            $strHTML = '<table id="tblReportDetail">' .
+                       '<tr>' .
+                       '<th>Invoice Date</th>' . 
+                       '<th>Due Date</th>' . 
+                       '<th>AR Terms</th>' . 
+                       '<th>Invoice ID</th>' . 
+                       '<th>Sales Order ID</th>' . 
+                       '<th>Customer PO ID</th>' . 
+                       '<th>Region</th>' . 
+                       '<th>Invoice Amount</th>' . 
+                       '<th>Amount Due</th>' . 
+                       '<th>Bucket One</th>' . 
+                       '<th>Bucket Two</th>' . 
+                       '<th>Bucket Three</th>' . 
+                       '<th>Bucket Four</th>' . 
+                       '</tr>' . 
+                       '<tr><hr id="lineReport"></tr>';
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'Header: ' . $strHTML);                       
 
             //loop through records and create HTML page
-            while ($row = $stmt->fetch())
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
             {
-              $strHTML = $strHTML . '<div>' . (string)$$row['ARM_InvoiceID'] . '</div>'  .
-              '<div>' . $$row['ARM_InvoiceDate'] . '</div>' .
-              '<div>' . funcFormatCurrency($row['QueryAR.BucketOne'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($row['QueryAR.BucketTwo'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($row['QueryAR.BucketThree'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($row['QueryAR.BucketFour'], '£') . '</div>';        
-            }
-funcWriteLog(CNST_STR_ERRORLOG, null, $strHTML);
-            return false;
+ /*
+     0        ARM_InvoiceID,*
+     1        ARM_SalesOrderID,*
+     2        ARM_CurrencyType,
+     3        ARM_Region,*
+     4        ARM_CustomerPOID,*
+     5        ARM_InvoiceDate,*
+     6        ARM_DueDate,*
+     7        ARM_ARTermsDesc,*
+     8        ARM_InvoiceAmt,*
+     9        SumOfARP_PayAmt,*
+     10       QueryAR.BucketOne,
+     11       QueryAR.BucketTwo,
+     12       QueryAR.BucketThree,
+     13       QueryAR.BucketFour
+*/
+            //just incase for bizarre reason there is no invoice ID!
+            if (!is_null($row[0]) ) 
+            {
+                $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                        '<td>' . $row[5] . '</td>' . 
+                        '<td>' . $row[6] . '</td>' . 
+                        '<td>' . $row[7] . '</td>' . 
+                        '<td>' . $row[0] . '</td>' . 
+                        '<td>' . $row[1] . '</td>' . 
+                        '<td>' . $row[4] . '</td>' . 
+                        '<td>' . $row[3] . '</td>' . 
+                        '<td>' . funcFormatCurrency($row[9], '£') . '</td>' . 
+                        '<td>' . funcFormatCurrency($row[10], '£') . '</td>' . 
+                        '<td>' . funcFormatCurrency($row[11], '£') . '</td>' . 
+                        '<td>' . funcFormatCurrency($row[12], '£') . '</td>' . 
+                        '<td>' . funcFormatCurrency($row[13], '£') . '</td>' . 
+                        '</tr>';
+            }               
+        }
+//funcWriteLog(CNST_STR_ERRORLOG, null, $strHTML);
+             $strHTML = $strHTML . '</table>';
+             return false;
            }
         else {
             return false;
@@ -359,7 +439,7 @@ switch ($strReportType)
    case 'AR':
        if (funcGetOutstandingAR()) $intErrorCount++;
 }
-funcWriteLog(CNST_STR_ERRORLOG, null, (string)$intErrorCount); 
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'error count: ' . (string)$intErrorCount); 
 //any errors
 if ($intErrorCount !== 0)
     {
@@ -369,9 +449,11 @@ if ($intErrorCount !== 0)
         ]);
     }
 
-funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);    
+
 if ($strHTML !== '')
 {
+    $strHTML = CNST_STR_HTML_HEADER . $strHTML . CNST_STR_HTML_FOOTER;
+funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);     
     echo json_encode([
         'status' => true,
         'HTML' => $strHTML,
