@@ -34,9 +34,9 @@ try
   if (!is_null($exception))
   {
       error_log(print_r($strErrorMessage, true) . PHP_EOL,3,$strLogFile); 
-      error_log(print_r($exception->getFile(), true) . PHP_EOL,3,$strLogFile);      
-      error_log(print_r($exception->getCode(), true) . PHP_EOL,3,$strLogFile);   
-      error_log(print_r($exception->getLine(), true) . PHP_EOL,3,$strLogFile);         
+      error_log(print_r('File: ' . $exception->getFile(), true) . PHP_EOL,3,$strLogFile);      
+      error_log(print_r('Code: ' . $exception->getCode(), true) . PHP_EOL,3,$strLogFile);   
+      error_log(print_r('Line: ' . $exception->getLine(), true) . PHP_EOL,3,$strLogFile);         
   }
   else
     {

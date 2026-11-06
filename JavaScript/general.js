@@ -35,6 +35,7 @@ function funcClose(event)
   funcClearLoginData(); 
 
   //return NOTHING to avoid confirmation dialog
+  return;
 }
 
 
@@ -44,7 +45,8 @@ function escapeHtml(value) {
 
     div.textContent = value ?? "";
 
-    return div.innerHTML;
+//    return div.innerHTML;
+    return;
 }
 
 

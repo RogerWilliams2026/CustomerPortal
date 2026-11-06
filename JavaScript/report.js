@@ -13,12 +13,13 @@ const BTNShowReportAR = document.getElementById("BTNShowReportAR");
 const BTNShowReportCreditMemos= document.getElementById("BTNShowReportCreditMemos");
 const BTNShowReportInvoices = document.getElementById("BTNShowReportInvoices");
 //get report frame to show results in
-let FARReport = document.getElementById("fraReport");
+let DIVReport = document.getElementById("divReportFlex");
 
 async function funcShowReportAR(event)
 {
    let dteDateFrom = new Date(document.getElementById("TXTDateFrom").value);
    let dteDateTo = new Date(document.getElementById("TXTDateTo").value);
+   alert("funcShowReportAR");
    //convert to japanese format
    dteDateFrom = dteDateFrom.toISOString();
    alert(dteDateFrom);
@@ -26,15 +27,23 @@ async function funcShowReportAR(event)
    alert(dteDateTo);
 
 
+   //remove: T00:00:00.000Z
+   dteDateFrom = dteDateFrom.replace("T00:00:00.000Z","");
+   dteDateTo = dteDateTo.replace("T00:00:00.000Z","");
+
+   alert(dteDateFrom);
+   alert(dteDateTo);
+
     event.preventDefault();
    
         const dataUser = {
-            customerid: sessionStorage.GetItem("customerid"),
+            customerid: sessionStorage.getItem("customerid"),
             reporttype: "AR",
             datefrom: dteDateFrom,
             dateto: dteDateTo
         };
 
+       alert(dataUser); 
        //send to PHP
         const response = await fetch("/api/getreportdata.php", {
 
@@ -53,7 +62,15 @@ async function funcShowReportAR(event)
             //get HTML from promise and put into DIV
 
             if (result.status) {
-               FARReport.innerHTML = result.HTML;
+alert("records: " + result.norecords);                
+                if (result.norecords == false)
+                {
+                   DIVReport.innerHTML = result.HTML;
+                }
+                else
+                {
+                   alert("No Records Found!");  
+                }    
             }
             else    
             {
@@ -66,6 +83,7 @@ async function funcShowReportAR(event)
         };
 };
 
+alert("report.js");
 
 //create handler for show reports submit button
-document.getElementById("BTNShowReportAR").addEventListener("submit", funcShowReportAR);
+document.getElementById("BTNShowReportAR").addEventListener("click", funcShowReportAR);

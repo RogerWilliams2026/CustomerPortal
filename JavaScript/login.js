@@ -30,6 +30,7 @@ function funcClose(event)
   //funcClearLoginData(); 
 
   //return NOTHING to avoid confirmation dialog
+  return;
 }
 
 

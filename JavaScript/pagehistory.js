@@ -20,7 +20,7 @@ let docHeader = null;
 export function SetHeader(objValue)
 {
     docHeader = objValue;
-    alert(docHeader);
+    alert("SetHeader: " + docHeader);
 }
 
 export function GetHeader() {

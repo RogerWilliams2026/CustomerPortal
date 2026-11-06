@@ -45,8 +45,8 @@ const CNST_STR_HTML_FOOTER = '
 
 //used for creating report pages
 $strHTML = '';
-$DateFrom = '';
-$DateTo = '';
+$dateFrom = '';
+$dateTo = '';
 $intErrorCount = 0;
 
 //*****custom funcs*****
@@ -64,25 +64,26 @@ function funcGetOutstandingAR()
     gets outstanding AR and adds to $summaryJSON class
 
 */
-    global $DateFrom;
-    global $DateTo;
+    global $dateFrom;
+    global $dateTo;
     global $strHTML;
     global $pdo;
     global $strCustomerID;
 
     $sql = "";
+//funcWriteLog(CNST_STR_ERRORLOG,null, $dateFrom);
+//funcWriteLog(CNST_STR_ERRORLOG,null, $dateTo);
 
     #start date is $DateFrom - 1 month
-    $dateStart = date_add(date_create($DateFrom), date_interval_create_from_date_string('-1 month'));
+    $dateStart = date_add(date_create($dateFrom), date_interval_create_from_date_string('-1 month'));
 
     //add year offset
-  //  $dateStart = date_add($dateStart, date_interval_create_from_date_string("{$intOffset} year"));
     $dateStart = $dateStart->format('Y/m/d');
- 
+ //funcWriteLog(CNST_STR_ERRORLOG,null,'start: ' . $dateStart);
     #end date is $DateTo
-    $dateEnd = date_create($DateTo); //date('Y/m/d');
+    $dateEnd = date_create($dateTo); //date('Y/m/d');
     $dateEnd = $dateEnd->format('Y/m/d');
-
+ //funcWriteLog(CNST_STR_ERRORLOG,null, 'end: ' . $dateEnd);
     #bucket 1 = 1 months before start date
     $dateBucketOne = date_add(date_create($dateStart), date_interval_create_from_date_string('-1 month'));
     $dateBucketOne = $dateBucketOne->format('Y/m/d');
@@ -99,9 +100,30 @@ function funcGetOutstandingAR()
     try {
 //    SELECT SUM(QueryAR.OutstandingAR) AS SumOfAR 
     $sql = "
-    SELECT DISTINCT IVM.IVM_InvoiceID, ARM.ARM_SalesOrderID, ARM.ARM_CurrencyType, ARM.ARM_Region, ARM.ARM_CustomerID, ARM.ARM_DomesticBalanceDueAmt, ARM.ARM_DomesticInvoiceNetAmt, 
-    CONCAT(CUS_BillName, ARM_CustomerID) AS CusNameID, CUS.CUS_BillName, CUS.CUS_BillState, CUS.CUS_BillPhone, CUS.CUS_BillContactName,  
-    CUS.CUS_CurrentAmt, ARM.ARM_CustomerPOID, ARM.ARM_InvoiceID, ARM.ARM_InvoiceDate, ARM.ARM_DueDate, ARM.ARM_ARTermsDesc, ARM.ARM_InvoiceAmt, qryARAging_sub.SumOfARP_PayAmt, 
+    SELECT DISTINCT 
+            IVM_InvoiceID,
+            ARM_SalesOrderID,
+            ARM_CurrencyType,
+            ARM_Region,
+            ARM_CustomerID,
+            ARM_DomesticBalanceDueAmt,
+            ARM_DomesticInvoiceNetAmt,
+            CONCAT(CUS_BillName, ARM_CustomerID) AS CusNameID,
+            CUS_BillName,
+            CUS_BillState,
+            CUS_BillPhone,
+            CUS_BillContactName,
+            ARM_CustomerPOID,
+            ARM_InvoiceID,
+            ARM_InvoiceDate,
+            ARM_DueDate,
+            ARM_ARTermsDesc,
+            ARM_InvoiceAmt,
+            SumOfARP_PayAmt,
+            QueryAR.BucketOne,
+            QueryAR.BucketTwo,
+            QueryAR.BucketThree,
+            QueryAR.BucketFour
     FROM (
         SELECT DISTINCT
             IVM.IVM_InvoiceID,
@@ -180,6 +202,18 @@ function funcGetOutstandingAR()
     ";
 
     $stmt = $pdo->prepare($sql);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datestart: ' . $dateStart);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'dateend: ' . $dateEnd);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datestart2: ' . $dateStart);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketone: ' . $dateBucketOne);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketone2: ' . $dateBucketOne);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebuckettwo: ' . $dateBucketTwo);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebuckettwo2: ' . $dateBucketTwo);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketthree: ' . $dateBucketThree);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketthree2: ' . $dateBucketThree);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'enddate2: ' . $dateEnd);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'enddate3: ' . $dateEnd);
+// funcWriteLog(CNST_STR_ERRORLOG,null, 'customerid: ' . $strCustomerID);
 
     $stmt->execute([
         'startdate'   => $dateStart,
@@ -196,30 +230,33 @@ function funcGetOutstandingAR()
         'customerid'  => $strCustomerID
     ]);
 
+//    funcWriteLog(CNST_STR_ERRORLOG,null, $sql);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         #any records?
         if (!empty($result)) {
             //create detail header
-            $strHTML = '<div id="divReportDetailHeader">' .
+            $strHTML = 
                        '<div>' . 'Invoice ID' . '</div>' . 
                        '<div>' . 'Invoice Date' . '</div>' .
                        '<div>' . 'Bucket One' . '</div>' .
                        '<div>' . 'Bucket Two' . '</div>' .
                        '<div>' . 'Bucket Three' . '</div>' .
-                       '<div>' . 'BucketF Four' . '</div>' .
-                       '</div>';
+                       '<div>' . 'Bucket Four' . '</div>';
+funcWriteLog(CNST_STR_ERRORLOG, null, 'Header: ' . $strHTML);                       
 
             //loop through records and create HTML page
             while ($row = $stmt->fetch())
             {
-              $strHTML = $strHTML . '<div>' . $$row['ARM_InvoiceID'] . '</div>'  .
+              $strHTML = $strHTML . '<div>' . (string)$$row['ARM_InvoiceID'] . '</div>'  .
               '<div>' . $$row['ARM_InvoiceDate'] . '</div>' .
-              '<div>' . funcFormatCurrency($result['QueryAR.BucketOne)'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($result['QueryAR.BucketTwo)'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($result['QueryAR.BucketThree)'], '£') . '</div>' .
-              '<div>' . funcFormatCurrency($result['QueryAR.BucketFour)'], '£') . '</div>';        
+              '<div>' . funcFormatCurrency($row['QueryAR.BucketOne'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($row['QueryAR.BucketTwo'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($row['QueryAR.BucketThree'], '£') . '</div>' .
+              '<div>' . funcFormatCurrency($row['QueryAR.BucketFour'], '£') . '</div>';        
             }
+funcWriteLog(CNST_STR_ERRORLOG, null, $strHTML);
+            return false;
            }
         else {
             return false;
@@ -228,7 +265,6 @@ function funcGetOutstandingAR()
             funcWriteLog(CNST_STR_ERRORLOG, $e, 'Outstanding ARError');
             return true;
     }
-  return false;
 };
 
 
@@ -280,8 +316,8 @@ if ($strCustomerID === '') {
 
 #customer reports
 $strReportType = trim($data['reporttype'] ?? '');
-$DateFrom = trim($data['datefrom'] ?? '');
-$DateTo = trim($data['dateto'] ?? '');
+$dateFrom = trim($data['datefrom'] ?? '');
+$dateTo = trim($data['dateto'] ?? '');
 
 
 if ($strReportType === '') {
@@ -295,7 +331,7 @@ if ($strReportType === '') {
     exit;
 }
 
-if ($DateFrom === '') {
+if ($dateFrom === '') {
     http_response_code(400);
 
     echo json_encode([
@@ -306,7 +342,7 @@ if ($DateFrom === '') {
     exit;
 }
 
-if ($DateTo === '') {
+if ($dateTo === '') {
     http_response_code(400);
 
     echo json_encode([
@@ -323,7 +359,7 @@ switch ($strReportType)
    case 'AR':
        if (funcGetOutstandingAR()) $intErrorCount++;
 }
-
+funcWriteLog(CNST_STR_ERRORLOG, null, (string)$intErrorCount); 
 //any errors
 if ($intErrorCount !== 0)
     {
@@ -333,16 +369,23 @@ if ($intErrorCount !== 0)
         ]);
     }
 
-if ($HTML !== '')
+funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);    
+if ($strHTML !== '')
 {
     echo json_encode([
         'status' => true,
-        'HTML' => $strHTML
+        'HTML' => $strHTML,
+        'norecords' => false
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 else
 {
-    funcWriteLog(CNST_STR_ERRORLOG, null, 'Error Trying To Create HTML');
+    echo json_encode([
+        'status' => true,
+        'HTML' => $strHTML,
+        'norecords' => true
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+ //   funcWriteLog(CNST_STR_ERRORLOG, null, 'Error Trying To Create HTML');
 }    
 // try {
 //     $stmt = $pdo->prepare(
