@@ -83,19 +83,14 @@ function funcGetOutstandingAR()
     global $strCustomerID;
 
     $sql = "";
-//funcWriteLog(CNST_STR_ERRORLOG,null, $dateFrom);
-//funcWriteLog(CNST_STR_ERRORLOG,null, $dateTo);
-
     #start date is $DateFrom - 1 month
     $dateStart = date_add(date_create($dateFrom), date_interval_create_from_date_string('-1 month'));
 
     //add year offset
     $dateStart = $dateStart->format('Y/m/d');
- //funcWriteLog(CNST_STR_ERRORLOG,null,'start: ' . $dateStart);
     #end date is $DateTo
     $dateEnd = date_create($dateTo); //date('Y/m/d');
     $dateEnd = $dateEnd->format('Y/m/d');
- //funcWriteLog(CNST_STR_ERRORLOG,null, 'end: ' . $dateEnd);
     #bucket 1 = 1 months before start date
     $dateBucketOne = date_add(date_create($dateStart), date_interval_create_from_date_string('-1 month'));
     $dateBucketOne = $dateBucketOne->format('Y/m/d');
@@ -110,31 +105,6 @@ function funcGetOutstandingAR()
 
    
     try {
-    // $sql = "
-    // SELECT DISTINCT 
-    //         IVM_InvoiceID,
-    //         ARM_SalesOrderID,
-    //         ARM_CurrencyType,
-    //         ARM_Region,
-    //         ARM_CustomerID,
-    //         ARM_DomesticBalanceDueAmt,
-    //         ARM_DomesticInvoiceNetAmt,
-    //         CONCAT(CUS_BillName, ARM_CustomerID) AS CusNameID,
-    //         CUS_BillName,
-    //         CUS_BillState,
-    //         CUS_BillPhone,
-    //         CUS_BillContactName,
-    //         ARM_CustomerPOID,
-    //         ARM_InvoiceID,
-    //         ARM_InvoiceDate,
-    //         ARM_DueDate,
-    //         ARM_ARTermsDesc,
-    //         ARM_InvoiceAmt,
-    //         SumOfARP_PayAmt,
-    //         QueryAR.BucketOne,
-    //         QueryAR.BucketTwo,
-    //         QueryAR.BucketThree,
-    //         QueryAR.BucketFour
     $sql = "
     SELECT DISTINCT 
             ARM_InvoiceID,
@@ -229,18 +199,6 @@ function funcGetOutstandingAR()
     ";
 
     $stmt = $pdo->prepare($sql);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datestart: ' . $dateStart);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'dateend: ' . $dateEnd);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datestart2: ' . $dateStart);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketone: ' . $dateBucketOne);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketone2: ' . $dateBucketOne);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebuckettwo: ' . $dateBucketTwo);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebuckettwo2: ' . $dateBucketTwo);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketthree: ' . $dateBucketThree);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'datebucketthree2: ' . $dateBucketThree);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'enddate2: ' . $dateEnd);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'enddate3: ' . $dateEnd);
-// funcWriteLog(CNST_STR_ERRORLOG,null, 'customerid: ' . $strCustomerID);
 
     $stmt->execute([
         'startdate'   => $dateStart,
@@ -257,26 +215,11 @@ function funcGetOutstandingAR()
         'customerid'  => $strCustomerID
     ]);
 
-//    funcWriteLog(CNST_STR_ERRORLOG,null, $sql);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         #any records?
         if (!empty($result)) {
             //create detail header
-            // $strHTML = 
-            //            '<div>' . 'Invoice Date' . '</div>' . 
-            //            '<div>' . 'Due Date' . '</div>' .
-            //            '<div>' . 'AR Terms' . '</div>' .
-            //            '<div>' . 'Invoice ID' . '</div>' .
-            //            '<div>' . 'Sales Order ID' . '</div>' .                       
-            //            '<div>' . 'Customer PO ID' . '</div>' .
-            //            '<div>' . 'Region' . '</div>' .
-            //            '<div>' . 'Invoice Amount' . '</div>' .      
-            //            '<div>' . 'Amount Due' . '</div>' .               
-            //            '<div>' . 'Bucket One' . '</div>' .
-            //            '<div>' . 'Bucket Two' . '</div>' .
-            //            '<div>' . 'Bucket Three' . '</div>' .
-            //            '<div>' . 'Bucket Four' . '</div>';
             $strHTML = '<table id="tblReportDetail">' .
                        '<tr>' .
                        '<th>Invoice Date</th>' . 
@@ -294,7 +237,6 @@ function funcGetOutstandingAR()
                        '<th>Bucket Four</th>' . 
                        '</tr>' . 
                        '<tr><hr id="lineReport"></tr>';
-//funcWriteLog(CNST_STR_ERRORLOG, null, 'Header: ' . $strHTML);                       
 
             //loop through records and create HTML page
             while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
@@ -315,29 +257,28 @@ function funcGetOutstandingAR()
      12       QueryAR.BucketThree,
      13       QueryAR.BucketFour
 */
-            //just incase for bizarre reason there is no invoice ID!
-            if (!is_null($row[0]) ) 
-            {
-                $strHTML = $strHTML . '<tr class="clsReportDetail">' .
-                        '<td>' . $row[5] . '</td>' . 
-                        '<td>' . $row[6] . '</td>' . 
-                        '<td>' . $row[7] . '</td>' . 
-                        '<td>' . $row[0] . '</td>' . 
-                        '<td>' . $row[1] . '</td>' . 
-                        '<td>' . $row[4] . '</td>' . 
-                        '<td>' . $row[3] . '</td>' . 
-                        '<td>' . funcFormatCurrency($row[9], '£') . '</td>' . 
-                        '<td>' . funcFormatCurrency($row[10], '£') . '</td>' . 
-                        '<td>' . funcFormatCurrency($row[11], '£') . '</td>' . 
-                        '<td>' . funcFormatCurrency($row[12], '£') . '</td>' . 
-                        '<td>' . funcFormatCurrency($row[13], '£') . '</td>' . 
-                        '</tr>';
-            }               
-        }
-//funcWriteLog(CNST_STR_ERRORLOG, null, $strHTML);
+                //just incase for bizarre reason there is no invoice ID!
+                if (!is_null($row[0]) ) 
+                {
+                    $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                            '<td>' . $row[5] . '</td>' . 
+                            '<td>' . $row[6] . '</td>' . 
+                            '<td>' . $row[7] . '</td>' . 
+                            '<td>' . $row[0] . '</td>' . 
+                            '<td>' . $row[1] . '</td>' . 
+                            '<td>' . $row[4] . '</td>' . 
+                            '<td>' . $row[3] . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[9], '£') . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[10], '£') . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[11], '£') . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[12], '£') . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[13], '£') . '</td>' . 
+                            '</tr>';
+                }               
+            }
              $strHTML = $strHTML . '</table>';
              return false;
-           }
+        }
         else {
             return false;
         }
@@ -347,6 +288,76 @@ function funcGetOutstandingAR()
     }
 };
 
+
+function funcGetBacklog()
+{
+/*
+    Created 26/10/2026 By Roger Williams
+
+    gets sales backlog and adds to $summaryJSON class
+
+*/
+    global $strHTML;
+    global $pdo;
+    global $strCustomerID;
+
+    try {
+       $stmt = $pdo->prepare('
+                SELECT SOM.SOM_SalesOrderID, SOM.SOM_SalesOrderDate, SOD.SOD_SOLineNbr, 
+                SOD.SOD_RequiredQty, SOD.SOD_UnitPrice,  
+                SOD.SOD_UnitPrice * SOD.SOD_RequiredQty AS LineTotal FROM SOM
+                INNER JOIN SOD ON (SOM.SOM_SalesOrderID = SOD.SOD_SalesOrderID)
+                WHERE SOM.SOM_CustomerID = :customerid AND SOD.SOD_ShipComplete <> 0;');
+
+funcWriteLog(CNST_STR_ERRORLOG,null, 'SQL ');
+        $stmt->execute([':customerid' => $strCustomerID]);
+        #get results
+        $result = $stmt->fetch();
+    
+        #any records?
+        if (!empty($result)) {
+            //create detail header
+            $strHTML = '<table id="tblReportDetail">' .
+                       '<tr>' .
+                       '<th>Sales Order ID</th>' . 
+                       '<th>Sales Order Date</th>' . 
+                       '<th>Line Nbr</th>' . 
+                       '<th>Qty</th>' . 
+                       '<th>Unit Price</th>' . 
+                       '<th>Line Total</th>' . 
+                       '</tr>' . 
+                       '<tr><hr id="lineReport"></tr>';
+funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML1: ' . $strHTML);
+            //loop through records and create HTML page
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
+            {
+                //just incase for bizarre reason there is no invoice ID!
+                if (!is_null($row[0]) ) 
+                {
+                    $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                            '<td>' . $row[0] . '</td>' . 
+                            '<td>' . $row[1] . '</td>' . 
+                            '<td>' . $row[2] . '</td>' . 
+                            '<td>' . $row[3] . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[4], '£') . '</td>' . 
+                            '<td>' . funcFormatCurrency($row[5], '£') . '</td>' . 
+                            '</tr>';
+                }   
+            }
+
+            $strHTML = $strHTML . '</table>';
+funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML2: ' . $strHTML);            
+            return false;
+        }
+        else {
+           return false; 
+        }
+      } catch (PDOException $e) {
+            funcWriteLog(CNST_STR_ERRORLOG, $e, 'Backlog Error');
+        return true;
+    }
+  return false;
+}
 
 //*****end custom funcs*****
 
@@ -411,35 +422,40 @@ if ($strReportType === '') {
     exit;
 }
 
-if ($dateFrom === '') {
-    http_response_code(400);
+// if ($dateFrom === '') {
+//     http_response_code(400);
 
-    echo json_encode([
-        'status' => false,
-        'error' => 'From Date Is Required'
-    ]);
+//     echo json_encode([
+//         'status' => false,
+//         'error' => 'From Date Is Required'
+//     ]);
 
-    exit;
-}
+//     exit;
+// }
 
-if ($dateTo === '') {
-    http_response_code(400);
+// if ($dateTo === '') {
+//     http_response_code(400);
 
-    echo json_encode([
-        'status' => false,
-        'error' => 'To Date Is Required'
-    ]);
+//     echo json_encode([
+//         'status' => false,
+//         'error' => 'To Date Is Required'
+//     ]);
 
-    exit;
-}
+//     exit;
+// }
 
+funcWriteLog(CNST_STR_ERRORLOG, null, 'report type: ' . $strReportType); 
 //create report HTML based on user choice
 switch ($strReportType)
 {
-   case 'AR':
+   case 'ar':
        if (funcGetOutstandingAR()) $intErrorCount++;
+       break;
+   case 'backlog':
+       if ((funcGetBacklog())) $intErrorCount++;   
+       break;
 }
-//funcWriteLog(CNST_STR_ERRORLOG, null, 'error count: ' . (string)$intErrorCount); 
+funcWriteLog(CNST_STR_ERRORLOG, null, 'error count: ' . (string)$intErrorCount); 
 //any errors
 if ($intErrorCount !== 0)
     {
@@ -449,11 +465,11 @@ if ($intErrorCount !== 0)
         ]);
     }
 
-
+funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);  
 if ($strHTML !== '')
 {
     $strHTML = CNST_STR_HTML_HEADER . $strHTML . CNST_STR_HTML_FOOTER;
-funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);     
+  
     echo json_encode([
         'status' => true,
         'HTML' => $strHTML,

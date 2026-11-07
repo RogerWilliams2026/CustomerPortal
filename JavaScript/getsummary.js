@@ -3,7 +3,6 @@
 
 export async function funcGetSummary()
 {
-//  let DIVSummary = document.getElementById("divSummaryHeader").children[0]; 
   let DIVSummary = document.getElementById("divSummary"); 
 
        const dataUser = {
