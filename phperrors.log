@@ -1,0 +1,22 @@
+creditmemo from JS: CM298382
+credit memo: CM298382
+report type: creditmemos
+date to: 
+creditmemo: CM298382
+result: Array
+HTML pre loop <table><tr class="clsReportHeader"><th>Invoice ID</th><th>Invoice Date</th><th>Due Date</th><th>Comments</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportHeaderDetail"><td>CM298382</td><td>2021-08-09</td><td>2021-08-09</td><td>CREDIT RAISED AGAINST DEBIT NOTE RRQ5046 AND RAN 61631</td></tr></table><table><tr class="clsReportDetail"><th>What</th><th>Qty</th><th>Value</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportDetail"><td>VAT</td><td>1</td><td>£17.24</td></tr>
+HTML post loop <table><tr class="clsReportHeader"><th>Invoice ID</th><th>Invoice Date</th><th>Due Date</th><th>Comments</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportHeaderDetail"><td>CM298382</td><td>2021-08-09</td><td>2021-08-09</td><td>CREDIT RAISED AGAINST DEBIT NOTE RRQ5046 AND RAN 61631</td></tr></table><table><tr class="clsReportDetail"><th>What</th><th>Qty</th><th>Value</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportDetail"><td>VAT</td><td>1</td><td>£17.24</td></tr><tr class="clsReportDetail"><td>VAT</td><td>1</td><td>£17.24</td></tr></table>
+error count: 0
+HTML: <table><tr class="clsReportHeader"><th>Invoice ID</th><th>Invoice Date</th><th>Due Date</th><th>Comments</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportHeaderDetail"><td>CM298382</td><td>2021-08-09</td><td>2021-08-09</td><td>CREDIT RAISED AGAINST DEBIT NOTE RRQ5046 AND RAN 61631</td></tr></table><table><tr class="clsReportDetail"><th>What</th><th>Qty</th><th>Value</th></tr><tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr><tr class="clsReportDetail"><td>VAT</td><td>1</td><td>£17.24</td></tr><tr class="clsReportDetail"><td>VAT</td><td>1</td><td>£17.24</td></tr></table>

@@ -26,7 +26,7 @@ const CNST_STR_HTML_HEADER = '
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>RogCustomer Portal 2026 - Report Results</title>
   </head>
-  <link type="text/css" link rel="stylesheet" href="/css/style.css"></link>
+  <link type="text/css" link rel="stylesheet" href="/css/reportstyle.css"></link>
   <body>
   <div id="divReportHeader">
      <h3>Report Results:</h3>
@@ -63,12 +63,14 @@ $intErrorCount = 0;
 
 //*****custom funcs*****
 
+
 function funcGetOutstandingAR()
 {
 /*
     Modified 28/10/2026 By Roger Williams
 
     in order to get any data to apply global $offset value to year
+    now returns HTML for page iframe
 
 
     Created 21/10/2026 By Roger Williams
@@ -196,6 +198,7 @@ function funcGetOutstandingAR()
             IFNULL(qryARAging_sub.SumOfARP_PayAmt, 0) <> 0
         AND ARM.ARM_CustomerID = :customerid
     ) AS QueryAR
+     ORDER BY ARM_InvoiceDate DESC;
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -215,10 +218,12 @@ function funcGetOutstandingAR()
         'customerid'  => $strCustomerID
     ]);
 
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT);
 
         #any records?
-        if (!empty($result)) {
+        if (!empty($result)) 
+        {
+funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML: ' . $result);      
             //create detail header
             $strHTML = '<table id="tblReportDetail">' .
                        '<tr>' .
@@ -237,6 +242,22 @@ function funcGetOutstandingAR()
                        '<th>Bucket Four</th>' . 
                        '</tr>' . 
                        '<tr><hr id="lineReport"></tr>';
+
+            //create first row
+            $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                '<td>' . $result[5] . '</td>' . 
+                '<td>' . $result[6] . '</td>' . 
+                '<td>' . $result[7] . '</td>' . 
+                '<td>' . $result[0] . '</td>' . 
+                '<td>' . $result[1] . '</td>' . 
+                '<td>' . $result[4] . '</td>' . 
+                '<td>' . $result[3] . '</td>' . 
+                '<td>' . funcFormatCurrency($result[9], '£') . '</td>' . 
+                '<td>' . funcFormatCurrency($result[10], '£') . '</td>' . 
+                '<td>' . funcFormatCurrency($result[11], '£') . '</td>' . 
+                '<td>' . funcFormatCurrency($result[12], '£') . '</td>' . 
+                '<td>' . funcFormatCurrency($result[13], '£') . '</td>' . 
+                '</tr>';
 
             //loop through records and create HTML page
             while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
@@ -289,12 +310,289 @@ function funcGetOutstandingAR()
 };
 
 
+function funcGetCreditMemos()
+{
+/*
+    Created 09/11/2026 By Roger Williams
+
+    gets credit memos for customer returns as HTML table
+
+
+*/
+    global $dateFrom;
+    global $dateTo;
+    global $strHTML;
+    global $pdo;
+    global $strCustomerID;
+    global $strCreditMemo;
+
+    $sql = '';
+    $strInvoiceID = '';
+
+funcWriteLog(CNST_STR_ERRORLOG, null, 'date to: ' . $dateTo);   
+    if ($dateTo !== '')
+    { 
+        #start date
+        $dateStart = date_create($dateFrom);
+        $dateStart = $dateStart->format('Y/m/d');
+        #end date is $DateTo
+        $dateEnd = date_create($dateTo);
+        $dateEnd = $dateEnd->format('Y/m/d');
+        //ARM_Comments is for header ARC_Comments is 'item id'
+        $sql = "
+                SELECT ARM.ARM_InvoiceID, ARM.ARM_InvoiceDate, ARC.ARC_CreditAmt, ARC.ARC_Comment, 
+                ARM.ARM_DueDate, ARM.ARM_Comments, IVI.IVI_TotalShipQty FROM ARC
+                INNER JOIN ARM ON (ARC.ARC_InvoiceID = ARM.ARM_InvoiceID)
+                INNER JOIN IVI ON (IVI.IVI_InvoiceID = ARM.ARM_InvoiceID)
+                WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt <> 0
+                AND ARM.ARM_InvoiceDate BETWEEN :startdate AND :enddate
+                ORDER BY ARM.ARM_InvoiceDate DESC;
+        ";
+    }
+    else
+    {
+funcWriteLog(CNST_STR_ERRORLOG, null, 'creditmemo: ' . $strCreditMemo);         
+        if ($strCreditMemo === 'all' )
+        {
+            //ARM_Comments is for header ARC_Comments is 'item id'
+            $sql = "
+                    SELECT ARM.ARM_InvoiceID, ARM.ARM_InvoiceDate, ARC.ARC_CreditAmt, ARC.ARC_Comment, 
+                    ARM.ARM_DueDate, ARM.ARM_Comments, IVI.IVI_TotalShipQty FROM ARC
+                    INNER JOIN ARM ON (ARC.ARC_InvoiceID = ARM.ARM_InvoiceID)
+                    INNER JOIN IVI ON (IVI.IVI_InvoiceID = ARM.ARM_InvoiceID)
+                    WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt <> 0
+                    ORDER BY ARM.ARM_InvoiceDate DESC;
+            ";
+        }    
+        else
+        {
+            //ARM_Comments is for header ARC_Comments is 'item id'
+            $sql = "
+                    SELECT ARM.ARM_InvoiceID, ARM.ARM_InvoiceDate, ARC.ARC_CreditAmt, ARC.ARC_Comment, 
+                    ARM.ARM_DueDate, ARM.ARM_Comments, IVI.IVI_TotalShipQty FROM ARC
+                    INNER JOIN ARM ON (ARC.ARC_InvoiceID = ARM.ARM_InvoiceID)
+                    INNER JOIN IVI ON (IVI.IVI_InvoiceID = ARM.ARM_InvoiceID)
+                    WHERE ARM.ARM_InvoiceID = :creditmemo AND ARM.ARM_BalanceDueAmt <> 0
+                    ORDER BY ARM.ARM_InvoiceDate DESC;
+            ";
+        }
+    }    
+   
+    try 
+    {    
+        $stmt = $pdo->prepare($sql);
+
+         if ($dateTo !== '')
+         {     
+            $stmt->execute([
+            'startdate'   => $dateStart,
+            'enddate'     => $dateEnd,
+            'customerid'  => $strCustomerID
+            ]);
+        }
+        else
+        {
+            if ($strCreditMemo === 'all')
+            {        
+                $stmt->execute(['customerid'  => $strCustomerID]);  
+            }       
+            else
+            {
+                $stmt->execute(['creditmemo' => $strCreditMemo]);   
+            }        
+        }    
+
+        $result = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT);
+
+        #any records?
+        if (!empty($result)) 
+        {
+funcWriteLog(CNST_STR_ERRORLOG, null, 'result: ' . $result);    
+//ARM.ARM_InvoiceID, ARM.ARM_InvoiceDate, ARC.ARC_CreditAmt, ARC.ARC_Comment, 
+//ARM.ARM_DueDate, ARM.ARM_Comments, IVI.IVI_TotalShipQty 
+
+            $strHTML = '<table>' .
+                       '<tr class="clsReportHeader">' .
+                       '<th>Invoice ID</th>' . 
+                       '<th>Invoice Date</th>' . 
+                       '<th>Due Date</th>' . 
+                       '<th>Comments</th>' . 
+                       '</tr>' . 
+                       '<tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr>';
+
+            //create header lines
+            $strHTML = $strHTML . '<tr class="clsReportHeaderDetail">' .
+                    '<td>' . $result[0] . '</td>' . 
+                    '<td>' . $result[1] . '</td>' .
+                    '<td>' . $result[4] . '</td>' .
+                    '<td>' . $result[5] . '</td>' . 
+                    '</tr>';
+            $strHTML = $strHTML . '</table>';
+
+            // //create lines header
+            $strHTML = $strHTML . '<table>' .
+                       '<tr class="clsReportDetail">' .
+                       '<th>What</th>' . 
+                       '<th>Qty</th>' . 
+                       '<th>Value</th>' . 
+                       '</tr>' . 
+                       '<tr style="border-bottom:1px solid white">
+                          <td colspan="100%"></td>
+                        </tr>';
+                   
+            //add first row 
+            $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                    '<td>' . $result[3] . '</td>' . 
+                    '<td>' . $result[6] . '</td>' . 
+                    '<td>' . funcFormatCurrency($result[2], '£') . '</td>' . 
+                    '</tr>';
+           
+             //set current invoice ID             
+            $strInvoiceID = $result[0];   
+
+funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML pre loop ' . $strHTML);    
+//             //loop through records and create HTML page
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
+            {
+                //just incase for bizarre reason there is no invoice ID!
+                if (!is_null($row[0]) ) 
+                {
+                   if ($strInvoiceID !== $row[0])
+                   {
+                        //create detail header
+                        $strHTML = $strHTML . '<table class="clsReportHeader">' .
+                                '<tr>' .
+                                '<th>Invoice ID</th>' . 
+                                '<th>Invoice Date</th>' . 
+                                '<th>Due Date</th>' . 
+                                '<th>Comments</th>' . 
+                                '</tr>' . 
+                                '<tr style="border-bottom:1px solid white">
+                                    <td colspan="100%"></td>
+                                    </tr>';
+
+                        //create header lines
+                        $strHTML = $strHTML . '<tr class="clsReportHeaderDetail">' .
+                                '<td>' . $row[0] . '</td>' . 
+                                '<td>' . $row[1] . '</td>' .
+                                '<td>' . $row[4] . '</td>' .
+                                '<td>' . $row[5] . '</td>' . 
+                                '</tr>';
+
+                        //create lines header
+                        $strHTML = $strHTML . '<table class="clsReportDetail">' .
+                                '<tr>' .
+                                    '<th>What</th>' . 
+                                    '<th>Qty</th>' . 
+                                    '<th>Value</th>' . 
+                                '</tr>' . 
+                                '<tr style="border-bottom:1px solid white">
+                                    <td colspan="100%"></td>
+                                    </tr>';
+                      
+                        //add first row 
+                        $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                                '<td>' . $row[3] . '</td>' . 
+                                '<td>' . $row[6] . '</td>' . 
+                                '<td>' . funcFormatCurrency($row[2], '£') . '</td>' . 
+                                '</tr>';
+funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML loop new invoice ID ' . $strHTML);                                   
+
+                        //set current invoice ID             
+                        $strInvoiceID = $row[0];  
+                   }  
+                   else
+                   {
+                        //add lines to existing credit memo
+                        $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                                '<td>' . $result[3] . '</td>' . 
+                                '<td>' . $result[6] . '</td>' . 
+                                '<td>' . funcFormatCurrency($result[2], '£') . '</td>' . 
+                                '</tr>';           
+                   } 
+                }               
+            }
+             $strHTML = $strHTML . '</table>';
+funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML post loop ' . $strHTML);                
+             return false;
+       }
+       else {
+           return false;
+       }
+      } catch (PDOException $e) {
+            funcWriteLog(CNST_STR_ERRORLOG, $e, 'Credit Memos Error');
+            return true;
+    }
+};
+
+
+function funcGetCreditMemosList()
+{
+/*
+    Created 09/11/2026 By Roger Williams
+
+    gets credit memos for customer returns as select list items HTML
+
+
+*/
+    global $strHTML;
+    global $pdo;
+    global $strCustomerID;
+
+    //ARM_Comments is for header ARC_Comments is 'item id'
+    $sql = "
+            SELECT DISTINCT ARM_InvoiceID, ARM.ARM_InvoiceDate FROM ARM 
+            INNER JOIN ARC ON ARM.ARM_InvoiceID = ARC.ARC_InvoiceID
+            WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt <> 0
+            ORDER BY ARM.ARM_InvoiceDate DESC;
+    ";
+    //add default option
+    $strHTML = $strHTML . '<option value="all">All</option>'; 
+
+    try 
+    {    
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['customerid'  => $strCustomerID]);
+        $result = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT);
+
+        #any records?
+        if (!empty($result)) 
+        {
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML: ' . $result);      
+           $strHTML = $strHTML . '<option value="' . $result[0] . '">' . $result[0]  .'</option>'; 
+   
+           //loop through records and create HTML page
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
+            {
+                //just incase for bizarre reason there is no invoice ID!
+                if (!is_null($row[0]) ) 
+                {
+                    $strHTML = $strHTML . '<option value="' . $row[0] . '">' . $row[0]  .'</option>'; 
+                }               
+            }
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML: ' . $strHTML);
+             return false;
+        }
+        else
+        {
+            return false;
+        }         
+    } 
+    catch (PDOException $e) 
+    {
+            funcWriteLog(CNST_STR_ERRORLOG, $e, 'Outstanding ARError');
+            return true;
+    }
+};
+
 function funcGetBacklog()
 {
 /*
     Created 26/10/2026 By Roger Williams
 
-    gets sales backlog and adds to $summaryJSON class
+    gets sales backlog returns HTML for page iframe
 
 */
     global $strHTML;
@@ -309,13 +607,17 @@ function funcGetBacklog()
                 INNER JOIN SOD ON (SOM.SOM_SalesOrderID = SOD.SOD_SalesOrderID)
                 WHERE SOM.SOM_CustomerID = :customerid AND SOD.SOD_ShipComplete <> 0;');
 
-funcWriteLog(CNST_STR_ERRORLOG,null, 'SQL ');
+
         $stmt->execute([':customerid' => $strCustomerID]);
         #get results
         $result = $stmt->fetch();
     
+        $result = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT);
+
         #any records?
-        if (!empty($result)) {
+        if (!empty($result)) 
+        {
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML: ' . $result);     
             //create detail header
             $strHTML = '<table id="tblReportDetail">' .
                        '<tr>' .
@@ -327,7 +629,16 @@ funcWriteLog(CNST_STR_ERRORLOG,null, 'SQL ');
                        '<th>Line Total</th>' . 
                        '</tr>' . 
                        '<tr><hr id="lineReport"></tr>';
-funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML1: ' . $strHTML);
+           //add first row 
+            $strHTML = $strHTML . '<tr class="clsReportDetail">' .
+                    '<td>' . $result[0] . '</td>' . 
+                    '<td>' . $result[1] . '</td>' . 
+                    '<td>' . $result[2] . '</td>' . 
+                    '<td>' . $result[3] . '</td>' . 
+                    '<td>' . funcFormatCurrency($result[4], '£') . '</td>' . 
+                    '<td>' . funcFormatCurrency($result[5], '£') . '</td>' . 
+                    '</tr>';
+                       
             //loop through records and create HTML page
             while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
             {
@@ -346,7 +657,7 @@ funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML1: ' . $strHTML);
             }
 
             $strHTML = $strHTML . '</table>';
-funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML2: ' . $strHTML);            
+//funcWriteLog(CNST_STR_ERRORLOG,null, 'HTML2: ' . $strHTML);            
             return false;
         }
         else {
@@ -409,7 +720,8 @@ if ($strCustomerID === '') {
 $strReportType = trim($data['reporttype'] ?? '');
 $dateFrom = trim($data['datefrom'] ?? '');
 $dateTo = trim($data['dateto'] ?? '');
-
+$strCreditMemo = trim($data['creditmemo'] ?? '');
+funcWriteLog(CNST_STR_ERRORLOG, null, 'creditmemo from JS: ' . $strCreditMemo);  
 
 if ($strReportType === '') {
     http_response_code(400);
@@ -421,40 +733,49 @@ if ($strReportType === '') {
 
     exit;
 }
-
-// if ($dateFrom === '') {
-//     http_response_code(400);
-
-//     echo json_encode([
-//         'status' => false,
-//         'error' => 'From Date Is Required'
-//     ]);
-
-//     exit;
-// }
-
-// if ($dateTo === '') {
-//     http_response_code(400);
-
-//     echo json_encode([
-//         'status' => false,
-//         'error' => 'To Date Is Required'
-//     ]);
-
-//     exit;
-// }
-
+funcWriteLog(CNST_STR_ERRORLOG, null, 'credit memo: ' . $strCreditMemo); 
 funcWriteLog(CNST_STR_ERRORLOG, null, 'report type: ' . $strReportType); 
 //create report HTML based on user choice
 switch ($strReportType)
 {
    case 'ar':
-       if (funcGetOutstandingAR()) $intErrorCount++;
-       break;
+        if ($dateFrom === '') {
+            http_response_code(400);
+
+            echo json_encode([
+                'status' => false,
+                'error' => 'From Date Is Required'
+            ]);
+
+            exit;
+        }
+
+        if ($dateTo === '') {
+            http_response_code(400);
+
+            echo json_encode([
+                'status' => false,
+                'error' => 'To Date Is Required'
+            ]);
+
+            exit;
+        }
+        if (funcGetOutstandingAR()) $intErrorCount++;
+           break;
+           
    case 'backlog':
        if ((funcGetBacklog())) $intErrorCount++;   
        break;
+
+   case 'creditmemos':
+        if (funcGetCreditMemos()) $intErrorCount++;
+           break;   
+
+   case 'creditmemoslist':
+        if (funcGetCreditMemosList()) $intErrorCount++;
+        break;                  
 }
+
 funcWriteLog(CNST_STR_ERRORLOG, null, 'error count: ' . (string)$intErrorCount); 
 //any errors
 if ($intErrorCount !== 0)
@@ -466,25 +787,50 @@ if ($intErrorCount !== 0)
     }
 
 funcWriteLog(CNST_STR_ERRORLOG, null,"HTML: " .  $strHTML);  
-if ($strHTML !== '')
+
+//if not getting a list check for errors and return $strHTML
+if ($strReportType !== 'creditmemoslist')
 {
-    $strHTML = CNST_STR_HTML_HEADER . $strHTML . CNST_STR_HTML_FOOTER;
-  
-    echo json_encode([
-        'status' => true,
-        'HTML' => $strHTML,
-        'norecords' => false
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-}
+    if ($strHTML !== '')
+    {
+        $strHTML = CNST_STR_HTML_HEADER . $strHTML . CNST_STR_HTML_FOOTER;
+    
+        echo json_encode([
+            'status' => true,
+            'HTML' => $strHTML,
+            'norecords' => false
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+    else
+    {
+        echo json_encode([
+            'status' => true,
+            'HTML' => $strHTML,
+            'norecords' => true
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    //   funcWriteLog(CNST_STR_ERRORLOG, null, 'Error Trying To Create HTML');
+    }
+}    
 else
 {
-    echo json_encode([
-        'status' => true,
-        'HTML' => $strHTML,
-        'norecords' => true
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
- //   funcWriteLog(CNST_STR_ERRORLOG, null, 'Error Trying To Create HTML');
-}    
+    if ($strHTML !== '')
+    {
+        echo json_encode([
+            'status' => true,
+            'HTML' => $strHTML,
+            'norecords' => false
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+    else
+    {
+        echo json_encode([
+            'status' => true,
+            'HTML' => $strHTML,
+            'norecords' => true
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }    
+}
+
 // try {
 //     $stmt = $pdo->prepare(
 //         'SELECT CUS_CreditLimitAmt FROM CUS WHERE CUS_CustomerID = :customerid;'
