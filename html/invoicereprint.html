@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2022-03-22
+    See: https://launchpad.net/bugs/1966004
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>RogCustomer Portal 2026</title>
+  </head>
+  <link type="text/css" link rel="stylesheet" href="/css/reportstyle.css"></link>
+
+  <body>
+  <iframe src="/html/header.html" class="clsHeader"></iframe> 
+
+  <div id="divMain" class="clsMain">
+      <hr>
+      <div id="divMainHeader"> 
+          Invoice Reprint
+      </div>
+      <hr>
+
+  <div id="divReportOptions"><br><br>    
+        <label for="TXTDateFrom" class="clsLabelText">Date From:</label>
+        <input
+            id="TXTDateFrom"
+            placeholder="Date From"
+            required
+            type="date"
+            class="clsLabelText"
+            maxlength="12"
+            autofocus
+        >
+        <br><br>  
+        <label for="TXTDateTo" class="clsLabelText">Date To:</label>
+        <input
+            id="TXTDateTo"
+            placeholder="Date To"
+            required
+            type="date"
+            class="clsLabelText"
+            maxlength="12"
+            autofocus
+        >
+        <label for="CHKAllDates" class="clsLabelText">Show All</label>
+        <input type="checkbox" id="CHKAllDates" checked="true">
+        <label for="CMBInvoices" class="clsLabelText">Invoices:</label>
+        <select id="CMBInvoices" class="clsSelect"></select>
+        <label for="CHKAllInvoices" class="clsLabelText">Show All</label>
+        <input type="checkbox" id="CHKAllInvoices" checked="true">
+        <br><br>
+   </div>
+        <button id="BTNShowReportInvoices">
+            Show Report
+        </button>        
+      <!-- </form> -->
+
+
+   <!-- <div id="divReport"> -->
+  <iframe id="fraReport"></iframe>
+       <!-- <div id="divReportFlex "></div> -->
+   <!-- </div> -->
+
+  </div>
+
+
+ <iframe src="/html/footer.html" class="clsFooter"></iframe> 
+ </body>
+<script src="../JavaScript/general.js" type="module" defer></script>
+<script src="../JavaScript/report.js" type="module" defer></script>
+</html>

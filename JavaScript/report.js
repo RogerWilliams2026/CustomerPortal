@@ -15,8 +15,12 @@ const BTNShowReportCreditMemos= document.getElementById("BTNShowReportCreditMemo
 const BTNShowReportInvoices = document.getElementById("BTNShowReportInvoices");
 //select lists
 const CMBCreditMemos = document.getElementById("CMBCreditMemos");
+const CMBInvoices = document.getElementById("CMBInvoices");
 //checkboxes
 const CHKAllCreditMemos = document.getElementById("CHKAllCreditMemos");
+const CHKAllOpenCreditMemos = document.getElementById("CHKAllOpenCreditMemos");
+
+
 
 //get report frame to show results in
 let DIVReport = document.getElementById("fraReport");
@@ -150,15 +154,27 @@ async function funcShowReportCreditMemos(event)
     let dataUser = null;
     event.preventDefault();
 
-   //show all credit memos?
+    //show all credit memos?
    if (CHKAllCreditMemos.checked)
    {
          dataUser = {
             customerid: sessionStorage.getItem("customerid"),
             reporttype: "creditmemos",
-            creditmemo: "all"
+            creditmemo: "all",
+            creditmemoopen: "false"
         };
-
+console.log(dataUser);
+        //special handler for if user wants to see ONLY open credit memos
+        if (CHKAllOpenCreditMemos.checked)
+        {   
+            dataUser = {
+                customerid: sessionStorage.getItem("customerid"),
+                reporttype: "creditmemos",
+                creditmemo: "all",
+                creditmemoopen: "true"
+            };         
+        }      
+console.log(dataUser);
         if (!CHKAllDates.checked)
         {
             //check if date selected
@@ -179,8 +195,22 @@ async function funcShowReportCreditMemos(event)
                     reporttype: "creditmemos",
                     datefrom: dteDateFrom,
                     dateto: dteDateTo,
-                    creditmemo: "all"
+                    creditmemo: "all",
+                    creditmemoopen: "false"
                 };
+
+                //special handler for if user wants to see ONLY open credit memos
+                if (CHKAllOpenCreditMemos.checked)
+                {   
+                    dataUser = {
+                        customerid: sessionStorage.getItem("customerid"),
+                        reporttype: "creditmemos",
+                        datefrom: dteDateFrom,
+                        dateto: dteDateTo,
+                        creditmemo: "all",
+                        creditmemoopen: "true"
+                };         
+                }   
             }
         }
    }
@@ -188,14 +218,26 @@ async function funcShowReportCreditMemos(event)
     {
         if (CMBCreditMemos.value !== "All")
         {   
-        dataUser = {
-            customerid: sessionStorage.getItem("customerid"),
-            reporttype: "creditmemos",
-            creditmemo: CMBCreditMemos.value
-        };         
+            dataUser = {
+                customerid: sessionStorage.getItem("customerid"),
+                reporttype: "creditmemos",
+                creditmemo: CMBCreditMemos.value,
+                creditmemoopen: "false"
+            };      
+        
+        //special handler for if user wants to see ONLY open credit memos
+        if (CHKAllOpenCreditMemos.checked)
+        {   
+            dataUser = {
+                customerid: sessionStorage.getItem("customerid"),
+                reporttype: "creditmemos",
+                creditmemo: CMBCreditMemos.value,
+                creditmemoopen: "true"
+            };         
+        }           
     }       
    }
-   
+alert(CHKAllOpenCreditMemos.checked);   
        //send to PHP
         const response = await fetch("/api/getreportdata.php", {
 
@@ -212,7 +254,6 @@ async function funcShowReportCreditMemos(event)
 
         if (result.status) {
             //get HTML from promise and put into DIV
-
             if (result.status) {
                 if (result.norecords == false)
                 {
@@ -293,6 +334,160 @@ async function funcGetCreditMemos(event)
         };
 };
 
+
+
+async function funcGetInvoices(event)
+{
+    /*
+
+      Created 12/11/2026 By Roger Williams
+
+      gets list of invoices from PHP puts into select list
+
+
+    */
+
+   
+        const dataUser = {
+            customerid: sessionStorage.getItem("customerid"),
+            reporttype: "invoiceslist",
+        };
+
+       //send to PHP
+        const response = await fetch("/api/getreportdata.php", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(dataUser)
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            //get HTML from promise and put into DIV
+
+            if (result.status) {
+                if (result.norecords == false)
+                {
+                   //update select list with items
+                   CMBInvoices.innerHTML = result.HTML;
+                }
+                else
+                {
+                   alert("No Records Found!");  
+                }    
+            }
+            else    
+            {
+                alert("Error:\n" + result.error);
+            }
+        }
+        else    
+        {
+            alert("Error Getting Report Data!:\n" + result.error);
+        };
+};
+
+
+async function funcShowReportInvoices(event)
+{
+    let dataUser = null;
+    event.preventDefault();
+
+    //show all invoices?
+   if (CHKAllInvoices.checked)
+   {
+         dataUser = {
+            customerid: sessionStorage.getItem("customerid"),
+            reporttype: "invoices",
+            invoice: "all"
+        };
+console.log(dataUser);
+
+if (!CHKAllDates.checked)
+        {
+            //check if date selected
+            if (document.getElementById("TXTDateFrom").value)
+            {     
+                let dteDateFrom = new Date(document.getElementById("TXTDateFrom").value);
+                let dteDateTo = new Date(document.getElementById("TXTDateTo").value);
+                //convert to japanese format
+                dteDateFrom = dteDateFrom.toISOString();
+                dteDateTo = dteDateTo.toISOString();
+
+                //remove: T00:00:00.000Z
+                dteDateFrom = dteDateFrom.replace("T00:00:00.000Z","");
+                dteDateTo = dteDateTo.replace("T00:00:00.000Z","");
+                
+                dataUser = {
+                    customerid: sessionStorage.getItem("customerid"),
+                    reporttype: "invoices",
+                    datefrom: dteDateFrom,
+                    dateto: dteDateTo,
+                    invoice: "all"
+                };
+console.log(dataUser);                
+            }
+        }
+   }
+    else //user selected one invoice
+    {
+        if (CMBInvoices.value !== "All")
+        {   
+            dataUser = {
+                customerid: sessionStorage.getItem("customerid"),
+                reporttype: "invoices",
+                invoice: CMBInvoices.value
+            };      
+    }       
+   }
+
+   //send to PHP
+        const response = await fetch("/api/getreportdata.php", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(dataUser)
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            //get HTML from promise and put into DIV
+            if (result.status) {
+                if (result.norecords == false)
+                {
+console.log(result.HTML);                    
+                   //update iframe with HTML   
+                   DIVReport.src="javascript:'" + result.HTML + "'";
+                }
+                else
+                {
+                   alert("No Records Found!");  
+                }    
+            }
+            else    
+            {
+                alert("Error:\n" + result.error);
+            }
+        }
+        else    
+        {
+            alert("Error Getting Report Data!:\n" + result.error);
+        };
+};
+
+//******end funcs*****
+
+
 //create handler for show report button
 if (document.body.contains(BTNShowReportAR))
 {
@@ -309,4 +504,11 @@ if (document.body.contains(BTNShowReportCreditMemos))
    BTNShowReportCreditMemos.addEventListener("click", funcShowReportCreditMemos);
    //for this page also need to get the credit memo invoice numbers into a select list!
    funcGetCreditMemos();
+};
+
+if (document.body.contains(BTNShowReportInvoices))
+{
+   BTNShowReportInvoices.addEventListener("click", funcShowReportInvoices);
+   //for this page also need to get the invoice numbers into a select list!
+   funcGetInvoices();
 };

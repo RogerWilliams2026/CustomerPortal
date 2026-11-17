@@ -71,7 +71,6 @@ export function SetLogoutButtonHandler()
   docHeader = modPageHistory.GetHeader();
   BTNLogout = docHeader.getElementById("btnLogout")
   BTNLogout.addEventListener("click",funcLogOutClicked);
-
 }
 
 export function funcOpenMenuItem(strWhat) 

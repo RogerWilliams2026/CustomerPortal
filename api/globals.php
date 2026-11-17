@@ -42,4 +42,26 @@ function funcFormatCurrency($fltAmount, string $strCurrencySymbol)
     return $strCurrencySymbol . implode('.', $parts);
 }
 
+function funcFormatToUKDate($strDate)
+{
+/*
+    Created 17/11/2026 By Roger Williams
+
+    
+    returns string with Uk date format first strips any time
+
+*/
+
+    if (strpos($strDate, ' ') !== 0)
+    {    
+        //strip time
+        $strDate = substr($strDate,0, strpos($strDate, ' '));
+        $strDate = trim($strDate);
+    }
+
+    $date = date_create($strDate);
+    $date = $date->format('d/m/Y');
+    return $date;
+}
+
 ?>
