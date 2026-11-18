@@ -675,6 +675,13 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML post loop ' . $strHTML);
 function funcGetCreditMemosList()
 {
 /*
+    Modified 17/11/2026 By Roger Williams
+
+    added: $blnOpenCreditMemo
+
+    so when CHKAllOpenCreditMemos is changed can show open or closed credit memos!
+
+
     Created 09/11/2026 By Roger Williams
 
     gets credit memos for customer returns as select list items HTML
@@ -684,15 +691,27 @@ function funcGetCreditMemosList()
     global $strHTML;
     global $pdo;
     global $strCustomerID;
+    global $blnOpenCreditMemo;
 
     //ARM_Comments is for header ARC_Comments is 'item id'
-    $sql = "
-            SELECT DISTINCT ARM_InvoiceID, ARM.ARM_InvoiceDate FROM ARM 
-            INNER JOIN ARC ON ARM.ARM_InvoiceID = ARC.ARC_InvoiceID
-            WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt <> 0
-            ORDER BY ARM.ARM_InvoiceDate DESC;
-    ";
-
+    if ($blnOpenCreditMemo)
+    {
+        $sql = "
+                SELECT DISTINCT ARM_InvoiceID, ARM.ARM_InvoiceDate FROM ARM 
+                INNER JOIN ARC ON ARM.ARM_InvoiceID = ARC.ARC_InvoiceID
+                WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt <> 0
+                ORDER BY ARM.ARM_InvoiceDate DESC;
+        ";
+    }   
+    else
+    {        
+        $sql = "
+                SELECT DISTINCT ARM_InvoiceID, ARM.ARM_InvoiceDate FROM ARM 
+                INNER JOIN ARC ON ARM.ARM_InvoiceID = ARC.ARC_InvoiceID
+                WHERE ARM.ARM_CustomerID = :customerid AND ARM.ARM_BalanceDueAmt = 0
+                ORDER BY ARM.ARM_InvoiceDate DESC;
+        ";
+    }
     //add default option
     $strHTML = $strHTML . '<option value="all">All</option>'; 
 
@@ -1015,10 +1034,10 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'ship date ' . $result[4]);
                         </div>
                         <hr>
                 ';
-funcWriteLog(CNST_STR_ERRORLOG, null, 'grid ' . $strHTML); 
+
             // //create lines header
-            $strHTML = $strHTML . '<div><table>' .
-                       '<tr class="clsReportDetail">' .
+            $strHTML = $strHTML . '<div><table cellspacing="0">' .
+                       '<tr class="clsReportDetailHeader">' .
                        '    <th>Line Nbr/PO Line Nbr</th>' . 
                        '    <th>Item ID</th>' . 
                        '    <th>Description</th>' .
@@ -1028,8 +1047,9 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'grid ' . $strHTML);
                        '    <th>Disc %</th>' .
                        '    <th>VAT</th>' .
                        '    <th>Line Value</th>' .
+                       '</tr>' .
                        '<tr>' .
-                       '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
+                       '     <td colspan="100%" height="2px" style="box-shadow: inset 0 -2px 0 white;">' .
                        '        &nbsp' .
                        '     </td>' .
                        '</tr>';
@@ -1055,30 +1075,25 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'grid ' . $strHTML);
 
             //add first row 
             $strHTML = $strHTML . '<tr class="clsReportDetail">' .
-                    '<td>' . $result[35] . '/' . $result[36] . '</td>' . 
-                    '<td>' . $result[37] . 
-                    '<td>' . $result[38] .
-                    '<td>' . $result[40] .
-                    '<td>' . $result[43] .
-                    '<td>' . funcFormatCurrency($result[44], '£') . '</td>' .
-                    '<td>' . $result[45] . '%' . 
-                    '<td>' . funcFormatCurrency($result[29], '£') . '</td>' .
-                    '<td>' . funcFormatCurrency($fltTotal, '£') . '</td>' .
-                    '</tr>';
-            $strHTML = $strHTML . '</div></table>';            
+                        '<td>' . $result[35] . '/' . $result[36] . '</td>' . 
+                        '<td>' . $result[37] . '</td>'  . 
+                        '<td>' . $result[38] . '</td>'  .
+                        '<td>' . $result[40] . '</td>'  .
+                        '<td>' . $result[43] . '</td>'  .
+                        '<td>' . funcFormatCurrency($result[44], '£') . '</td>' .
+                        '<td>' . $result[45] . '%</td>' . 
+                        '<td>' . funcFormatCurrency($result[29], '£') . '</td>' .
+                        '<td>' . funcFormatCurrency($fltTotal, '£') . '</td>' .
+                    '</tr>';                    
+       //     $strHTML = $strHTML . '</table></div>';            
              //set current invoice ID             
             $strInvoiceID = $result[0];   
-
-funcWriteLog(CNST_STR_ERRORLOG, null, 'vat ' . $fltVAT);  
-funcWriteLog(CNST_STR_ERRORLOG, null, 'disc ' . $fltDisc);  
-funcWriteLog(CNST_STR_ERRORLOG, null, 'price ' . $fltUnitPrice);  
-funcWriteLog(CNST_STR_ERRORLOG, null, 'price * qty ' . $fltUnitPrice * $result[43]);   
-funcWriteLog(CNST_STR_ERRORLOG, null, 'price minus disc ' . ($fltUnitPrice * $result[43]) - ($fltUnitPrice * $fltDisc));    
-funcWriteLog(CNST_STR_ERRORLOG, null, 'total + vat ' . ($fltUnitPrice * $result[43]) - ($fltUnitPrice * $fltDisc) + $fltVAT);   
+//@@
+funcWriteLog(CNST_STR_ERRORLOG, null, 'first line html ' . $strHTML); 
+funcWriteLog(CNST_STR_ERRORLOG, null, 'first line complete html page ' . CNST_STR_HTML_HEADER . $strHTML . CNST_STR_HTML_FOOTER);  
 
 
-//funcWriteLog(CNST_STR_ERRORLOG, null, 'sql ' . $sql);    
-//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML pre loop ' . $strHTML);    
+   
             //loop through records and create HTML page
             while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT))
             {
@@ -1090,6 +1105,7 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                    {
                         //add invoice totals as footer
                         $strHTML = $strHTML . '</div></table>
+                               <div><br></div>
                                <div class="clsReportLocalTotals">
                                    <hr>
                                     Total Vat For Invoice  : ' . funcFormatCurrency($fltInvoiceTotalVAT , '£') . '<br>
@@ -1181,10 +1197,9 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'html before date: ' . $strHTML);
                                 '    <th>Disc %</th>' .
                                 '    <th>VAT</th>' .
                                 '    <th>Line Value</th>' .
-                                '<tr>' .
-                                '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
-                                '        &nbsp' .
-                                '     </td>' .
+                                '</tr' .
+                                '    <tr class="clsRowSeparator">' .
+                                '    <td colspan="9"></td>' .
                                 '</tr>';
 
                         //calulate qty * price minus disc and previous plus vat and vat on its own
@@ -1210,16 +1225,16 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'html before date: ' . $strHTML);
                         //add first row 
                         $strHTML = $strHTML . '<tr class="clsReportDetail">' .
                                 '<td>' . $row[35] . '/' . $row[36] . '</td>' . 
-                                '<td>' . $row[37] . 
-                                '<td>' . $row[38] .
-                                '<td>' . $row[40] .
-                                '<td>' . $row[43] .
+                                '<td>' . $row[37] . '</td>'  . 
+                                '<td>' . $row[38] . '</td>'  .
+                                '<td>' . $row[40] . '</td>'  .
+                                '<td>' . $row[43] . '</td>'  .
                                 '<td>' . funcFormatCurrency($row[44], '£') . '</td>' .
-                                '<td>' . $row[45] . '%' . 
+                                '<td>' . $row[45] . '</td>'  . '%' . 
                                 '<td>' . funcFormatCurrency($row[29], '£') . '</td>' .
                                 '<td>' . funcFormatCurrency($fltTotal, '£') . '</td>' .
                                 '</tr>';
-             
+ funcWriteLog(CNST_STR_ERRORLOG, null, 'html after first row ' . $strHTML);             
                         //set current invoice ID             
                         $strInvoiceID = $row[0];                                                        
                    }  
@@ -1244,12 +1259,12 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'html before date: ' . $strHTML);
                         //add lines to existing invoice
                         $strHTML = $strHTML . '<tr class="clsReportDetail">' .
                                 '<td>' . $row[35] . '/' . $row[36] . '</td>' . 
-                                '<td>' . $row[37] . 
-                                '<td>' . $row[38] .
-                                '<td>' . $row[40] .
-                                '<td>' . $row[43] .
+                                '<td>' . $row[37] . '</td>'  . 
+                                '<td>' . $row[38] . '</td>'  .
+                                '<td>' . $row[40] . '</td>'  .
+                                '<td>' . $row[43] . '</td>'  .
                                 '<td>' . funcFormatCurrency($row[44], '£') . '</td>' .
-                                '<td>' . $row[45] . '%' . 
+                                '<td>' . $row[45] . '%' . '</td>'  . 
                                 '<td>' . funcFormatCurrency($row[29], '£') . '</td>' .
                                 '<td>' . funcFormatCurrency($fltTotal, '£') . '</td>' .
                                 '</tr>';     
@@ -1263,12 +1278,11 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'html before date: ' . $strHTML);
                         Total Vat For Invoice  : ' . funcFormatCurrency($fltInvoiceTotalVAT , '£') . '<br>
                         Total Value Of Invoice :  ' . funcFormatCurrency($fltInvoiceTotalValue , '£') . '
                     </div>
-                    <div><br><br>/div>
                     <hr>
+                    <div><br></div>
                     ';
             //show grand totals
             $strHTML = $strHTML . '</div></table>
-                    <br><br><br><br>
                     <hr>
                     <div class="clsReportGrandTotals">
                         Total Vat For All Invoices  : ' . funcFormatCurrency($fltGrandTotalVAT , '£') . '<br>

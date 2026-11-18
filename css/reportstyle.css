@@ -12,11 +12,30 @@ hr {
     background-color: rgb(164, 162, 162);
  }
 
+ /* below required to stop table having buge spaces between rows */
 table {
-    border-spacing: 30px;
-    width:auto;
+    border-collapse: collapse;
+    border-spacing: 5px 0;
+    margin: 0;
+    padding: 0;
 }
 
+th {
+    padding-top: 10px;
+    margin: 0;
+
+}
+
+td {
+    padding: 0;
+    margin-right: 10px;
+}
+
+
+tr {
+    padding: 20px;
+}
+/* end required table css */
 
 .clsLabelText{
     color: white;
@@ -188,7 +207,7 @@ table {
 
 .clsReportLocalTotals {
     color:rgb(168, 246, 67);
-    padding-left: 78vw;
+    padding-left: 74vw;
 }
 
 /* buttons */
@@ -239,8 +258,28 @@ table {
 .clsReportDetail {
     font-size: 14px;
     color:rgb(57, 137, 248);
+    line-height: normal;
+}
+/* 2px is row spacing 20px is space BETWEEN columns */
+.clsReportDetail td {
+    padding: 2px 20px;
 }
 
+.clsReportDetailHeader {
+    font-size: 14px;
+    color:rgb(57, 137, 248);
+    padding: 0px;
+    margin: 0px;
+    line-height: normal;
+}
+
+.clsRowSeparator td {
+    height: 2px;
+    padding: 0;
+    border-bottom: 2px solid #ccc;
+    line-height: 0;
+    font-size: 0;
+}
 /*  end report CSS  */
 
 /*  footer CSS */

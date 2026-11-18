@@ -19,7 +19,11 @@ const CMBInvoices = document.getElementById("CMBInvoices");
 //checkboxes
 const CHKAllCreditMemos = document.getElementById("CHKAllCreditMemos");
 const CHKAllOpenCreditMemos = document.getElementById("CHKAllOpenCreditMemos");
-
+const CHKAllDates = document.getElementById("CHKAllDates");
+const CHKAllInvoices = document.getElementById("CHKAllInvoices");
+//date controls
+const TXTDateFrom = document.getElementById("TXTDateFrom");
+const TXTDateTo = document.getElementById("TXTDateTo");
 
 
 //get report frame to show results in
@@ -280,6 +284,9 @@ alert(CHKAllOpenCreditMemos.checked);
 async function funcGetCreditMemos(event)
 {
     /*
+      Modified 17/11/2026 By Roger Williams
+
+      added code to process CHKAllOpenCreditMemos
 
       Created 09/11/2026 By Roger Williams
 
@@ -288,12 +295,22 @@ async function funcGetCreditMemos(event)
 
     */
 
- //  event.preventDefault();
-   
+    if (CHKAllOpenCreditMemos.checked)
+    { 
         const dataUser = {
             customerid: sessionStorage.getItem("customerid"),
             reporttype: "creditmemoslist",
+            creditmemoopen: "true"
         };
+    }
+    else
+    { 
+        const dataUser = {
+            customerid: sessionStorage.getItem("customerid"),
+            reporttype: "creditmemoslist",
+            creditmemoopen: "false"
+        };
+    }
 
        //send to PHP
         const response = await fetch("/api/getreportdata.php", {
@@ -485,6 +502,49 @@ console.log(result.HTML);
         };
 };
 
+
+function funcAllDatesChecked(event)
+{
+    event.preventDefault();
+
+    
+}
+
+function funcAllInvoicesChecked(event)
+{
+    event.preventDefault();
+
+    
+}
+
+function funcInvoiceSelected(event)
+{
+    event.preventDefault();
+
+    CHKAllInvoices.checked = false;
+}
+
+function funcCreditMemoSelected(event)
+{
+    event.preventDefault();
+
+    CHKAllCreditMemos.checked = false;
+}
+
+function funcFilterCreditMemos(event)
+{
+    event.preventDefault();
+  
+    funcGetCreditMemos();
+}
+
+function funcDateSelected(event)
+{
+    event.preventDefault();
+
+    CHKAllDates.checked = false;
+    
+}
 //******end funcs*****
 
 
@@ -501,14 +561,25 @@ if (document.body.contains(BTNShowReportBacklog))
   
 if (document.body.contains(BTNShowReportCreditMemos))
 {
+   //add event listeners  
    BTNShowReportCreditMemos.addEventListener("click", funcShowReportCreditMemos);
+   TXTDateFrom.addEventListener("change",funcDateSelected);
+   TXTDateTo.addEventListener("change",funcDateSelected);   
+   CMBCreditMemos.addEventListener("change", funcCreditMemoSelected);
+   CHKAllOpenCreditMemos.addEventListener("change", funcFilterCreditMemos)
    //for this page also need to get the credit memo invoice numbers into a select list!
    funcGetCreditMemos();
 };
 
 if (document.body.contains(BTNShowReportInvoices))
 {
+   //add event listeners 
    BTNShowReportInvoices.addEventListener("click", funcShowReportInvoices);
+   CHKAllDates.addEventListener("change",funcAllDatesChecked);
+   CHKAllInvoices.addEventListener("change",funcAllInvoicesChecked);
+   CMBInvoices.addEventListener("change",funcInvoiceSelected);
+   TXTDateFrom.addEventListener("change",funcDateSelected);
+   TXTDateTo.addEventListener("change",funcDateSelected);
    //for this page also need to get the invoice numbers into a select list!
    funcGetInvoices();
 };
