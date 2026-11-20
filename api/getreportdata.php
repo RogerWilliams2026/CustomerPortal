@@ -347,6 +347,9 @@ function funcGetCreditMemos()
     $sql = '';
     $strInvoiceID = '';
     $strName = '';
+    //for totals
+    $fltCreditMemoTotal = 0;
+    $fltGrandTotalValue = 0;
 
 funcWriteLog(CNST_STR_ERRORLOG, null, 'date to: ' . $dateTo);   
 funcWriteLog(CNST_STR_ERRORLOG, null, 'creditmemo: ' . $strCreditMemo);   
@@ -511,7 +514,7 @@ CUS.CUS_BillCountry,                 14
 ARC.ARC_CreditAmt,                   15
 ARC.ARC_Comment,                     16  
 ARM.ARM_CurrencyType,                17
--(ARM.ARM_InvoiceAmt) AS InvTotal    18  
+ 
 */
 
             //create customer address/name string
@@ -525,52 +528,53 @@ ARM.ARM_CurrencyType,                17
             $strName = $strName . (is_null($result[14]) ? '' : $result[14]. '<br>');
 
             $strHTML = '<table>' .
-                       '<tr class="clsReportHeader">' .
-                       '<th>Customer</th>' .
-                       '<th>Invoice ID</th>' . 
-                       '<th>Invoice Date</th>' . 
-                       '<th>Customer PO ID</th>' .
-                       '<th>Invoice Total</th>' .
-                       '<th>Due Date</th>' . 
-                       '<th>Comments</th>' . 
-                       '</tr>' . 
-                       '<tr>' .
-                       '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
-                       '         <br>  ;' .
-                       '     </td>' .
-                       '</tr>';
+                            '<tr class="clsReportHeader">' .
+                                    '<th>Customer</th>' .
+                                    '<th>Invoice ID</th>' . 
+                                    '<th>Invoice Date</th>' . 
+                                    '<th>Customer PO ID</th>' .
+                                    '<th>Due Date</th>' . 
+                                    '<th>Comments</th>' . 
+                            '</tr>' . 
+                            '<tr class="clsRowSeparator">' .
+                            '    <td colspan="9"></td>' .
+                            '</tr>'
+                       ;
 
             //create header lines
             $strHTML = $strHTML . '<tr class="clsReportHeaderDetail">' .
-                    '<td>' . $strName . '</td>' .
-                    '<td>' . $result[0] . '</td>' . 
-                    '<td>' . $result[2] . '</td>' .
-                    '<td>' . $result[3] . '</td>' .
-                    '<td>' . $result[4] . '</td>' .
-                    '<td>' . $result[5] . '</td>' .
-                    '<td>' . $result[6] . '</td>' . 
-                    '</tr>';
+                                        '<td>' . $strName . '</td>' .
+                                        '<td>' . $result[0] . '</td>' . 
+                                        '<td>' . funcFormatToUKDate($result[2]) . '</td>' .
+                                        '<td>' . $result[3] . '</td>' .
+                                        '<td>' . funcFormatToUKDate($result[5]) . '</td>' .
+                                        '<td>' . $result[6] . '</td>' . 
+                                  '</tr>';
             $strHTML = $strHTML . '</table>';
 
             //create lines header
             $strHTML = $strHTML . '<table>' .
-                       '<tr class="clsReportDetail">' .
-                       '<th>What</th>' . 
-                       '<th>Value</th>' . 
-                        '<tr>' .
-                        '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
-                        '         <br>  ;' .
-                        '     </td>' .
-                        '</tr>';
+                                        '<tr class="clsReportDetail">' .
+                                            '<th>What</th>' . 
+                                            '<th>Value</th>' . 
+                                        '</tr>' .    
+                                        '<tr class="clsRowSeparator">' .
+                                        '    <td colspan="9"></td>' .
+                                        '</tr>'
+                                ;
 
             
             //add first row 
             $strHTML = $strHTML . '<tr class="clsReportDetail">' .
-                    '<td>' . $result[16] . '</td>' . 
-                    '<td>' . funcFormatCurrency($result[15], '£') . '</td>' . 
-                    '</tr>';
-           
-             //set current invoice ID             
+                                     '<td>' . $result[16] . '</td>' . 
+                                     '<td>' . funcFormatCurrency($result[15], '£') . '</td>' . 
+                                  '</tr>';
+                        
+            //add value to credit memo total
+            $fltCreditMemoTotal = $result[15];  
+            //add total value to grand total
+            $fltGrandTotalValue = $result[15];      
+            //set current invoice ID             
             $strInvoiceID = $result[0];   
 
 funcWriteLog(CNST_STR_ERRORLOG, null, 'sql ' . $sql);    
@@ -584,7 +588,17 @@ funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML pre loop ' . $strHTML);
 funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $row[0]);                      
                    if ($strInvoiceID !== $row[0])
                    {
-                        $strHTML = $strHTML . '</table>';                    
+                        //add invoice totals as footer
+                        $strHTML = $strHTML . '</div></table>
+                               <div><br></div>
+                               <div class="clsReportLocalTotals">
+                                   <hr>
+                                    Total Value Of Credit Memo : ' . funcFormatCurrency($fltCreditMemoTotal, '£') . '
+                                   <hr>
+                               </div>
+                               <div><br><br></div>
+                               ';
+
                         //create customer address/name string
                         $strName = $row[7];
                         $strName = $strName . (is_null($row[8]) ? '' : $row[8]. '<br>');
@@ -601,39 +615,33 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                                 '<th>Invoice ID</th>' . 
                                 '<th>Invoice Date</th>' . 
                                 '<th>Customer PO ID</th>' .
-                                '<th>Invoice Total</th>' .
                                 '<th>Due Date</th>' . 
                                 '<th>Comments</th>' . 
                                 '</tr>' . 
-                                '<tr>' .
-                                '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
-                                '         <br>  ;' .
-                                '     </td>' .
+                                '<tr class="clsRowSeparator">' .
+                                '    <td colspan="9"></td>' .
                                 '</tr>';
 
 
                         //create header lines
                         $strHTML = $strHTML . '<tr class="clsReportHeaderDetail">' .
-                                '<td>' . $strName . '</td>' .
-                                '<td>' . $row[0] . '</td>' . 
-                                '<td>' . $row[2] . '</td>' .
-                                '<td>' . $row[3] . '</td>' .
-                                '<td>' . $row[4] . '</td>' .
-                                '<td>' . $row[5] . '</td>' .
-                                '<td>' . $row[6] . '</td>' . 
-                                '</tr>';
+                                                    '<td>' . $strName . '</td>' .
+                                                    '<td>' . $result[0] . '</td>' . 
+                                                    '<td>' . funcFormatToUKDate($result[2]) . '</td>' .
+                                                    '<td>' . $result[3] . '</td>' .
+                                                    '<td>' . funcFormatToUKDate($result[5]) . '</td>' .
+                                                    '<td>' . $result[6] . '</td>' . 
+                                            '</tr>';
                         $strHTML = $strHTML . '</table>';
 
                         //create lines header
                         $strHTML = $strHTML . '<table>' .
                                 '<tr class="clsReportDetail">' .
-                                '<th>What</th>' . 
-                                '<th>Value</th>' . 
+                                '   <th>What</th>' . 
+                                '   <th>Value</th>' . 
                                 '</tr>' . 
-                                '<tr>' .
-                                '     <td colspan="100%" style="box-shadow: inset 0 -2px 0 white;">' .
-                                '         <br>  ;' .
-                                '     </td>' .
+                                '<tr class="clsRowSeparator">' .
+                                '    <td colspan="9"></td>' .
                                 '</tr>';
                             
                         //add first row 
@@ -641,8 +649,11 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                                 '<td>' . $row[16] . '</td>' . 
                                 '<td>' . funcFormatCurrency($row[15], '£') . '</td>' . 
                                 '</tr>';
-//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML loop new invoice ID ' . $strHTML);                                   
-
+//funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML loop new invoice ID ' . $strHTML);   
+                        //add value to credit memo total 
+                        $fltCreditMemoTotal = $row[15];
+                        //add credit total value  to grand total
+                        $fltGrandTotalValue = $fltGrandTotalValue  + $fltCreditMemoTotal;  
                         //set current invoice ID             
                         $strInvoiceID = $row[0];  
                    }  
@@ -653,11 +664,36 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                                 '<td>' . $row[16] . '</td>' . 
                                 '<td>' . funcFormatCurrency($row[15], '£') . '</td>' . 
                                 '</tr>';      
+                        //add value to credit memo total 
+                        $fltCreditMemoTotal = $fltCreditMemoTotal + $row[15];
+                        //add credit total value  to grand total
+                        $fltGrandTotalValue = $fltGrandTotalValue + $row[15];                          
                    } 
                 }               
             }
          
-             $strHTML = $strHTML . '</table>';
+            //add invoice totals as footer
+            $strHTML = $strHTML . '</div></table>
+                    <div><br></div>
+                    <div class="clsReportLocalTotals">
+                        <hr>
+                        Total Value Of Credit Memo : ' . funcFormatCurrency($fltCreditMemoTotal , '£') . '
+                        <hr>
+                    </div>
+                    <div><br><br></div>
+                    ';
+
+            //show grand totals
+            $strHTML = $strHTML . '</div></table>
+                    <hr>
+                    <div class="clsReportGrandTotals">
+                        Total Value Of All Credit Memos : ' . funcFormatCurrency($fltGrandTotalValue , '£') . '
+                    </div>
+                    <hr>
+                 </body>
+            ';
+
+            $strHTML = $strHTML . '</table>';
 funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML post loop ' . $strHTML);                
              return false;
        }
