@@ -9,15 +9,19 @@
 </head>
 <header>
        <div id="divHeader">RogCustomer Portal 2026</div>
-       <div id="divCustomerDetails">
-            <div id="divCustomerID" class="clsCustomerDetails"></div>      
-            <div id="divCustomerName" class="clsCustomerDetails"></div>
-       </div>   
+            <div id="divCustomerDetails">
+                    <div id="divCustomerID" class="clsCustomerDetails"></div>      
+                    <div id="divCustomerName" class="clsCustomerDetails"></div>
 
-       <div id="divLogout">
-          <button id="btnLogout">Logout</button>
+                    <!-- <div>
+                            <label for="CMBPages" class="clsLabelText">Open Pages:</label>
+                            <select id="CMBPages" class="clsSelect"></select>
+                    </div>     -->
+                    <div id="divLogout">
+                            <button id="btnLogout">Logout</button>
+                    </div>
+            </div>   
        </div>
-
 
 <script type="module">
     import * as modPageHistory from "../JavaScript/pagehistory.js";
@@ -27,7 +31,7 @@
     document.getElementById("divCustomerID").innerText = "Customer ID: " + sessionStorage.getItem("customerid");
     document.getElementById("divCustomerName").innerText =  sessionStorage.getItem("customername")
     //store header in global var so general.js can access it
-    modPageHistory.SetHeader(document);
+//    modPageHistory.SetHeader(document);
     modGeneral.SetLogoutButtonHandler();
 </script>
 

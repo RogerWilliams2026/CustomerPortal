@@ -626,11 +626,11 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                         //create header lines
                         $strHTML = $strHTML . '<tr class="clsReportHeaderDetail">' .
                                                     '<td>' . $strName . '</td>' .
-                                                    '<td>' . $result[0] . '</td>' . 
-                                                    '<td>' . funcFormatToUKDate($result[2]) . '</td>' .
-                                                    '<td>' . $result[3] . '</td>' .
-                                                    '<td>' . funcFormatToUKDate($result[5]) . '</td>' .
-                                                    '<td>' . $result[6] . '</td>' . 
+                                                    '<td>' . $row[0] . '</td>' . 
+                                                    '<td>' . funcFormatToUKDate($row[2]) . '</td>' .
+                                                    '<td>' . $row[3] . '</td>' .
+                                                    '<td>' . funcFormatToUKDate($row[5]) . '</td>' .
+                                                    '<td>' . $row[6] . '</td>' . 
                                             '</tr>';
                         $strHTML = $strHTML . '</table>';
 
@@ -646,9 +646,9 @@ funcWriteLog(CNST_STR_ERRORLOG, null, '$strInvoiceID ' . $strInvoiceID . ' ' . $
                             
                         //add first row 
                         $strHTML = $strHTML . '<tr class="clsReportDetail">' .
-                                '<td>' . $row[16] . '</td>' . 
-                                '<td>' . funcFormatCurrency($row[15], '£') . '</td>' . 
-                                '</tr>';
+                                              '    <td>' . $row[16] . '</td>' . 
+                                              '    <td>' . funcFormatCurrency($row[15], '£') . '</td>' . 
+                                              '</tr>';
 //funcWriteLog(CNST_STR_ERRORLOG, null, 'HTML loop new invoice ID ' . $strHTML);   
                         //add value to credit memo total 
                         $fltCreditMemoTotal = $row[15];

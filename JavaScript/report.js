@@ -241,8 +241,8 @@ console.log(dataUser);
         }           
     }       
    }
-alert(CHKAllOpenCreditMemos.checked);   
-       //send to PHP
+
+        //send to PHP
         const response = await fetch("/api/getreportdata.php", {
 
             method: "POST",
@@ -423,7 +423,6 @@ async function funcShowReportInvoices(event)
             reporttype: "invoices",
             invoice: "all"
         };
-console.log(dataUser);
 
 if (!CHKAllDates.checked)
         {
@@ -447,7 +446,6 @@ if (!CHKAllDates.checked)
                     dateto: dteDateTo,
                     invoice: "all"
                 };
-console.log(dataUser);                
             }
         }
    }
@@ -481,8 +479,7 @@ console.log(dataUser);
             //get HTML from promise and put into DIV
             if (result.status) {
                 if (result.norecords == false)
-                {
-console.log(result.HTML);                    
+                {             
                    //update iframe with HTML   
                    DIVReport.src="javascript:'" + result.HTML + "'";
                 }

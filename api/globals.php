@@ -51,15 +51,29 @@ function funcFormatToUKDate($strDate)
     returns string with Uk date format first strips any time
 
 */
+  
+   if ($strDate === '')
+   {
+      throw new Exception('Empty date string supplied');
+   }
 
-    if (strpos($strDate, ' ') !== 0)
-    {    
-        //strip time
-        $strDate = substr($strDate,0, strpos($strDate, ' '));
-        $strDate = trim($strDate);
+   try
+    {
+        $strSpaces = strpos($strDate, ' ');
+
+        if ( $strSpaces !== false)
+        {    
+            //strip time
+            $strDate = substr($strDate,0, strpos($strDate, ' '));
+            $strDate = trim($strDate);
+        }
+
+        $date = new DateTime($strDate);
     }
-
-    $date = date_create($strDate);
+    catch (Throwable $ex)
+    {
+       funcWriteLog(CNST_STR_ERRORLOG, $ex, 'Date Conversion Error ' . $strDate);  
+    }
     $date = $date->format('d/m/Y');
     return $date;
 }

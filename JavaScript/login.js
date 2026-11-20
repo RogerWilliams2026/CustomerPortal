@@ -23,14 +23,11 @@ stores logged in user in sessionStorage
 
 function funcClose(event)
 {
-  // Recommended
-  event.preventDefault();
-
   //run php clear logins script
-  //funcClearLoginData(); 
+  funcClearLoginData(); 
 
   //return NOTHING to avoid confirmation dialog
-  return;
+  event.return  = '';
 }
 
 
@@ -44,6 +41,7 @@ function escapeHtml(value) {
 }
 
 //main code
+window.removeEventListener('beforeunload', funcClose);
 window.addEventListener("beforeunload",funcClose);
 
 document

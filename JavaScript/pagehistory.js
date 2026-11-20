@@ -19,8 +19,16 @@ let docHeader = null;
 
 export function SetHeader(objValue)
 {
-    docHeader = objValue;
-    alert("SetHeader: " + docHeader);
+    let DIVMain = objValue.getElementById("divMain");
+
+    //get child divMainHeader
+    DIVMain = objValue.getElementById("divMainHeader");
+    //store in open pages
+    dictPages["name"] = DIVMain.innerText;
+    dictPages["url"] = objValue.URL;
+    
+console.log(dictPages);
+    
 }
 
 export function GetHeader() {
