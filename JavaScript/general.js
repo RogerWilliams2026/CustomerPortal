@@ -47,16 +47,11 @@ function escapeHtml(value) {
 
 function funcLogOutClicked()
 {
-   alert("logout");
    //clear login details
    funcClearLoginData();
 
-   
-alert(parent.document.title);
-
-   window.close(modPageHistory.pgeCurrent);
- //  window.location.replace(parent.document.URL);
- //  window.location.replace("../index.html");
+   window.close(parent);
+   window.top.location.href = "../index.html";
 
 }
 
@@ -68,10 +63,20 @@ function funcPageSelected(event)
 
 export function SetLogoutButtonHandler()
 {
-  //get header DOM  
-  docHeader = modPageHistory.GetHeader();
-  BTNLogout = docHeader.getElementById("btnLogout")
-  BTNLogout.addEventListener("click",funcLogOutClicked);
+   //get header
+   let FRAHeader = window.parent.document.getElementsByClassName("clsHeader");
+
+   // Make sure an iframe exists
+    if (FRAHeader.length === 0)
+    {
+        console.log("Header iframe not found");
+        return;
+    }
+   let FRAFrame = FRAHeader[0];
+   //make sure get one that exists!
+   let docTemp = FRAFrame.contentDocument || FRAFrame.contentWindow.document;
+   let BTNLogout = docTemp.getElementById("btnLogout")
+   BTNLogout.addEventListener("click",funcLogOutClicked);
 }
 
 export function funcOpenMenuItem(strWhat) 
